@@ -252,6 +252,11 @@ namespace BubbleBuffs {
                 for (int n = 0; n < CasterQueue.Count; n++) {
                     var caster = CasterQueue[n];
 
+                    // Skip disabled source types
+                    if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
+                    if (caster.SourceType == BuffSourceType.Scroll && !UseScrolls) continue;
+                    if (caster.SourceType == BuffSourceType.Potion && !UsePotions) continue;
+
                     // Available Credit check incorporating Azata Zippy Magic
                     var numberOfSpellCastsByCaster = ActualCastQueue?.Where(x => x.Item2 == caster).Count() ?? 0;
                     var creditsNeeded = CreditsNeeded(caster.spell);

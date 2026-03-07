@@ -182,12 +182,14 @@ namespace BubbleBuffs {
                             Target = new TargetWrapper(forTarget.Unit),
                             Caster = caster.who,
                             SpellToCast = spellToCast,
-                            PowerfulChange = caster.PowerfulChange,
-                            ShareTransmutation = caster.ShareTransmutation,
-                            ReservoirCLBuff = caster.ReservoirCLBuff,
-                            AzataZippyMagic = caster.AzataZippyMagic,
+                            PowerfulChange = caster.SourceType == BuffSourceType.Spell && caster.PowerfulChange,
+                            ShareTransmutation = caster.SourceType == BuffSourceType.Spell && caster.ShareTransmutation,
+                            ReservoirCLBuff = caster.SourceType == BuffSourceType.Spell && caster.ReservoirCLBuff,
+                            AzataZippyMagic = caster.SourceType == BuffSourceType.Spell && caster.AzataZippyMagic,
                             IsDuplicateSpellApplied = IsDuplicateSpellApplied,
-                            SelfCastOnly = caster.SelfCastOnly
+                            SelfCastOnly = caster.SelfCastOnly,
+                            SourceType = caster.SourceType,
+                            SourceItem = caster.SourceItem
                         };
 
                         tasks.Add(task);
