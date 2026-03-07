@@ -230,6 +230,8 @@ namespace BubbleBuffs {
         public TargetWrapper Target;
         public UnitEntityData Caster;
         public bool SelfCastOnly;
+        public BuffSourceType SourceType;
+        public Kingmaker.Items.ItemEntity SourceItem;
 
         public Retentions Retentions {
             get {

@@ -78,19 +78,18 @@ namespace BubbleBuffs.Handlers {
         #region Constructors
 
         public EngineCastingHandler(CastTask castTask, bool spendSpellSlot = false) {
-            // Set fields
             _castTask = castTask;
             _spendSpellSlot = spendSpellSlot;
 
-            // Set retentions
-            SetAllRetentions();
+            // Only apply class-specific features for spell sources
+            if (_castTask.SourceType == BuffSourceType.Spell) {
+                SetAllRetentions();
+                ModifyCasterLevel();
+            }
 
-            // Remove spell resistance
             RemoveSpellResistance();
 
-            ModifyCasterLevel();
-            // If this is an Azata Zippy magic secondary cast, then increase the number of spell slots available to offset the spell cast
-            if (IsAzataZippyMagicSecondaryCast) {
+            if (_castTask.SourceType == BuffSourceType.Spell && IsAzataZippyMagicSecondaryCast) {
                 IncreaseSpellSlotsAvailable(_castTask.SpellToCast, _castTask.SpellToCast.SpellSlotCost);
                 AddMaterialComponentsForSpell(_castTask.SpellToCast, _castTask.SpellToCast.SpellSlotCost);
             }
@@ -113,17 +112,14 @@ namespace BubbleBuffs.Handlers {
         public void HandleExecutionProcessEnd(AbilityExecutionContext context) {
             if (Context != null && Context == context) {
                 try {
-                    // Remove retentions
-                    ReleaseAllRetentions();
-
-                    // Reset Spell resistance
+                    if (_castTask.SourceType == BuffSourceType.Spell) {
+                        ReleaseAllRetentions();
+                        RestoreCasterLevel();
+                    }
                     ResetSpellResistance();
-
-                    RestoreCasterLevel();
                 } catch (Exception ex) {
                     Main.Error(ex, "Casting: HandleExecutionProcessEnd");
                 } finally {
-                    // Remove from event bus
                     EventBus.Unsubscribe(this);
                 }
             }
@@ -164,12 +160,12 @@ namespace BubbleBuffs.Handlers {
 
                         // Always set to true if controlling Azata Zippy Magic Secondary casts
                         // This prevents the game's secondary cast from triggering, and allows us to control casting
-                        if (IsControllingAzataZippyMagicSecondaryCast) {
+                        if (_castTask.SourceType == BuffSourceType.Spell && IsControllingAzataZippyMagicSecondaryCast) {
                             evt.IsDuplicateSpellApplied = true;
                         }
 
                         // Spend spell slots if requested (e.g. cast directly from a rule trigger)
-                        if (_spendSpellSlot) {
+                        if (_spendSpellSlot && _castTask.SourceType == BuffSourceType.Spell) {
                             _castTask.SpellToCast.Spend();
                         }
                     } 
@@ -238,6 +234,7 @@ namespace BubbleBuffs.Handlers {
         /// <param name="spell"></param>
         /// <param name="amount"></param>
         private void IncreaseSpellSlotsAvailable(AbilityData spell, int amount) {
+            if (_castTask.SourceType != BuffSourceType.Spell) return;
             // Check if this is a converted spell.  A good test example is Magic Weapon, Primary
             if (spell.ConvertedFrom != null) {
                 IncreaseSpellSlotsAvailable(spell.ConvertedFrom, amount);
