@@ -136,6 +136,7 @@ namespace BubbleBuffs {
         internal Spellbook book;
         internal Category Category = Category.Spell;
         internal SavedBuffState SavedState;
+        public int SourcePriorityOverride = -1; // -1 = use global
 
         public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u, BuffSourceType sourceType = BuffSourceType.Spell, Kingmaker.Items.ItemEntity sourceItem = null) {
             if (this.book == null) {
@@ -179,6 +180,7 @@ namespace BubbleBuffs {
 
         public void InitialiseFromSave(SavedBuffState state) {
             InGroup = state.InGroup;
+            SourcePriorityOverride = state.SourcePriorityOverride;
             for (int i = 0; i < Bubble.Group.Count; i++) {
                 UnitEntityData u = Bubble.Group[i];
                 if (state.Wanted.Contains(u.UniqueId))
@@ -289,8 +291,32 @@ namespace BubbleBuffs {
             return (HiddenBecause & reason) != 0;
         }
 
+        public static int[] GetSourceOrder(SourcePriority priority) {
+            return priority switch {
+                SourcePriority.SpellsScrollsPotions => new[] { 0, 1, 2 },
+                SourcePriority.SpellsPotionsScrolls => new[] { 0, 2, 1 },
+                SourcePriority.ScrollsSpellsPotions => new[] { 1, 0, 2 },
+                SourcePriority.ScrollsPotionsSpells => new[] { 2, 0, 1 },
+                SourcePriority.PotionsSpellsScrolls => new[] { 1, 2, 0 },
+                SourcePriority.PotionsScrollsSpells => new[] { 2, 1, 0 },
+                _ => new[] { 0, 1, 2 }
+            };
+        }
+
         internal void SortProviders() {
+            var globalPriority = GlobalBubbleBuffer.Instance?.SpellbookController?.state?.SavedState?.GlobalSourcePriority
+                ?? SourcePriority.SpellsScrollsPotions;
+            var effectivePriority = SourcePriorityOverride >= 0
+                ? (SourcePriority)SourcePriorityOverride
+                : globalPriority;
+            var sourceOrder = GetSourceOrder(effectivePriority);
+
             CasterQueue.Sort((a, b) => {
+                int aSourceWeight = sourceOrder[(int)a.SourceType];
+                int bSourceWeight = sourceOrder[(int)b.SourceType];
+                if (aSourceWeight != bSourceWeight)
+                    return aSourceWeight - bSourceWeight;
+
                 if (a.Priority == b.Priority) {
                     int aScore = 0;
                     int bScore = 0;
