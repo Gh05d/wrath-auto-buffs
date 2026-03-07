@@ -45,5 +45,7 @@
   "use.sharetransmutation": "允许分享变化",
   "use.reservoirclbuff": "使用水库施法者的水平布法",
   "use.azatazippymagic": "控制 Azata Zippy 魔法辅助 Buff",
-  "nolimit": "不限制"
+  "nolimit": "不限制",
+  "openbuffs.tooltip.header": "打开增益菜单",
+  "openbuffs.tooltip.desc": "直接打开BubbleBuffs配置菜单"
 }

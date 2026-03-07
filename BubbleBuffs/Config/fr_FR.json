@@ -48,6 +48,8 @@
   "nolimit": "Non limité",
 
   "remove-all": "Enlevé pour tous",
-  "add-all": "Ajouté pour tous"
+  "add-all": "Ajouté pour tous",
+  "openbuffs.tooltip.header": "Ouvrir le menu de buffs",
+  "openbuffs.tooltip.desc": "Ouvrir directement le menu de configuration BubbleBuffs"
 
 }

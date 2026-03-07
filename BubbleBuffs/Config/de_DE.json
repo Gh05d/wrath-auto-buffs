@@ -80,5 +80,7 @@
   "log.equipment-unavailable": "nicht mehr verfugbar",
   "setting-equipment-enabled": "Ausrustungsnutzung aktivieren",
   "log.no-scroll-available": "Keine Schriftrolle von {0} im Inventar",
-  "log.no-potion-available": "Kein Trank von {0} im Inventar"
+  "log.no-potion-available": "Kein Trank von {0} im Inventar",
+  "openbuffs.tooltip.header": "Buff-Menü öffnen",
+  "openbuffs.tooltip.desc": "BubbleBuffs-Konfigurationsmenü direkt öffnen"
 }

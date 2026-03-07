@@ -77,7 +77,7 @@ namespace BubbleBuffs {
 
     public class BubbleBuffSpellbookController : MonoBehaviour {
         private GameObject ToggleButton;
-        private bool Buffing => PartyView.m_Hide;
+        internal bool Buffing => PartyView.m_Hide;
         private GameObject MainContainer;
         private GameObject NoSpellbooksContainer;
         public RectTransform TooltipRoot;
@@ -249,28 +249,7 @@ namespace BubbleBuffs {
                 var button = ToggleButton.GetComponentInChildren<OwlcatButton>();
                 button.OnLeftClick.RemoveAllListeners();
                 button.OnLeftClick.AddListener(() => {
-                    PartyView.HideAnimation(!Buffing);
-
-                    if (Buffing) {
-                        WasMainShown = MainContainer.activeSelf;
-                        if (WasMainShown)
-                            FadeOut(MainContainer);
-                        else
-                            FadeOut(NoSpellbooksContainer);
-                        MainContainer.SetActive(false);
-                        NoSpellbooksContainer.SetActive(false);
-                        ShowBuffWindow();
-                    } else {
-                        Hide();
-                        if (WasMainShown) {
-                            FadeIn(MainContainer);
-                            MainContainer.SetActive(true);
-                        } else {
-                            FadeIn(NoSpellbooksContainer);
-                            NoSpellbooksContainer.SetActive(true);
-                        }
-                    }
-
+                    ToggleBuffMode();
                 });
             }
 
@@ -291,6 +270,30 @@ namespace BubbleBuffs {
             if (Root != null) {
                 FadeOut(Root);
                 Root.SetActive(false);
+            }
+        }
+
+        public void ToggleBuffMode() {
+            PartyView.HideAnimation(!Buffing);
+
+            if (Buffing) {
+                WasMainShown = MainContainer.activeSelf;
+                if (WasMainShown)
+                    FadeOut(MainContainer);
+                else
+                    FadeOut(NoSpellbooksContainer);
+                MainContainer.SetActive(false);
+                NoSpellbooksContainer.SetActive(false);
+                ShowBuffWindow();
+            } else {
+                Hide();
+                if (WasMainShown) {
+                    FadeIn(MainContainer);
+                    MainContainer.SetActive(true);
+                } else {
+                    FadeIn(NoSpellbooksContainer);
+                    NoSpellbooksContainer.SetActive(true);
+                }
             }
         }
 
@@ -1858,6 +1861,7 @@ namespace BubbleBuffs {
         private ButtonSprites applyBuffsSprites;
         private ButtonSprites applyBuffsShortSprites;
         private ButtonSprites showMapSprites;
+        private ButtonSprites openBuffsSprites;
         private ButtonSprites applyBuffsImportantSprites;
         private GameObject buttonsContainer;
         public GameObject bubbleHud;
@@ -1928,6 +1932,8 @@ namespace BubbleBuffs {
                     applyBuffsImportantSprites = ButtonSprites.Load("apply_buffs_important", new Vector2Int(95, 95));
                 if (showMapSprites == null)
                     showMapSprites = ButtonSprites.Load("show_map", new Vector2Int(95, 95));
+                if (openBuffsSprites == null)
+                    openBuffsSprites = ButtonSprites.Load("open_buffs", new Vector2Int(95, 95));
 
                 // Load source-type overlay icons from known game blueprints
                 if (scrollOverlayIcon == null) {
@@ -2071,6 +2077,33 @@ namespace BubbleBuffs {
                     DungeonShowMap showMap = new();
                     AddButton("showmap.tooltip.header".i8(), "showmap.tooltip.desc".i8(), showMapSprites, () => showMap.RunAction());
                 }
+
+                // Add spacer gap before the Open Buffs button
+                var spacer = new GameObject("button-spacer", typeof(RectTransform));
+                spacer.transform.SetParent(buttonsContainer.transform, false);
+                spacer.AddComponent<LayoutElement>().preferredWidth = 20;
+                spacer.SetActive(true);
+
+                // Add Open Buffs quick button
+                AddButton("openbuffs.tooltip.header".i8(), "openbuffs.tooltip.desc".i8(), openBuffsSprites, () => {
+                    var spellScreen = UIHelpers.SpellbookScreen?.gameObject;
+                    if (spellScreen == null) return;
+
+                    var serviceWindow = spellScreen.transform.parent;
+                    bool spellbookOpen = serviceWindow != null && serviceWindow.gameObject.activeSelf;
+
+                    if (!spellbookOpen) {
+                        // Find and click the real spellbook button in the ingame menu
+                        var spellbookButton = Game.Instance.UI.Canvas.transform
+                            .Find("NestedCanvas1/IngameMenuView/ButtonsPart/Container/SpellbookButton")
+                            ?.GetComponentInChildren<OwlcatButton>();
+                        spellbookButton?.OnLeftClick?.Invoke();
+                    }
+
+                    if (SpellbookController != null && !SpellbookController.Buffing) {
+                        SpellbookController.ToggleBuffMode();
+                    }
+                });
 
                 Main.Verbose("remove old bubble?");
 #if debug

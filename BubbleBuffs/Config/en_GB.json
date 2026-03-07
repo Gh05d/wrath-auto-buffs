@@ -88,6 +88,8 @@
   "log.equipment-unavailable": "no longer available",
   "setting-equipment-enabled": "Enable equipment usage",
   "log.no-scroll-available": "No scroll of {0} in inventory",
-  "log.no-potion-available": "No potion of {0} in inventory"
+  "log.no-potion-available": "No potion of {0} in inventory",
+  "openbuffs.tooltip.header": "Open Buff Menu",
+  "openbuffs.tooltip.desc": "Directly open the BubbleBuffs configuration menu"
 
 }
