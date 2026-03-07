@@ -150,7 +150,8 @@ namespace BubbleBuffs {
             }
 
             foreach (var buffer in CasterQueue) {
-                if (buffer.who == provider && buffer.book?.Blueprint.AssetGuid == book?.Blueprint.AssetGuid) {
+                if (buffer.who == provider && buffer.book?.Blueprint.AssetGuid == book?.Blueprint.AssetGuid
+                    && buffer.SourceType == sourceType) {
                     if (!Key.Archmage && newCredit)
                         buffer.AddCredits(1);
                     return;
@@ -369,7 +370,8 @@ namespace BubbleBuffs {
     public class BuffProvider {
         public CasterKey Key => new() {
             Name = who.UniqueId,
-            Spellbook = book?.Blueprint.AssetGuid.m_Guid ?? Guid.Empty
+            Spellbook = book?.Blueprint.AssetGuid.m_Guid ?? Guid.Empty,
+            SourceType = SourceType
         };
 
         public bool ArchmageArmor = false;

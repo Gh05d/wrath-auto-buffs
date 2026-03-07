@@ -1009,15 +1009,15 @@ namespace BubbleBuffs {
 
             useSpellsToggle.toggle.onValueChanged.AddListener(val => {
                 var b = view.Selected;
-                if (b != null && b.SavedState != null) { b.SavedState.UseSpells = val; state.Save(); }
+                if (b != null) { b.UseSpells = val; if (b.SavedState != null) b.SavedState.UseSpells = val; state.Save(); }
             });
             useScrollsToggle.toggle.onValueChanged.AddListener(val => {
                 var b = view.Selected;
-                if (b != null && b.SavedState != null) { b.SavedState.UseScrolls = val; state.Save(); }
+                if (b != null) { b.UseScrolls = val; if (b.SavedState != null) b.SavedState.UseScrolls = val; state.Save(); }
             });
             usePotionsToggle.toggle.onValueChanged.AddListener(val => {
                 var b = view.Selected;
-                if (b != null && b.SavedState != null) { b.SavedState.UsePotions = val; state.Save(); }
+                if (b != null) { b.UsePotions = val; if (b.SavedState != null) b.SavedState.UsePotions = val; state.Save(); }
             });
 
             List<(ToggleWorkaround toggle, TextMeshProUGUI text)> ignoreEffectToggles = new();
@@ -2000,17 +2000,21 @@ namespace BubbleBuffs {
         public string Name;
         [JsonProperty]
         public Guid Spellbook;
+        [JsonProperty]
+        public BuffSourceType SourceType;
 
         public override bool Equals(object obj) {
             return obj is CasterKey key &&
                    Name == key.Name &&
-                   Spellbook.Equals(key.Spellbook);
+                   Spellbook.Equals(key.Spellbook) &&
+                   SourceType == key.SourceType;
         }
 
         public override int GetHashCode() {
-            int hashCode = -1362747006;
+            int hashCode = 1282151259;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
             hashCode = hashCode * -1521134295 + Spellbook.GetHashCode();
+            hashCode = hashCode * -1521134295 + SourceType.GetHashCode();
             return hashCode;
         }
     }
