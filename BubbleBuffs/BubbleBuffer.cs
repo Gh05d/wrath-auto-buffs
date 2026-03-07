@@ -835,10 +835,9 @@ namespace BubbleBuffs {
             CurrentCategory = new ButtonGroup<Category>(categoryRect);
             CurrentCategory.Selected.Subscribe<Category>(_ => RefreshFiltering());
 
-            CurrentCategory.Add(Category.Spell, "cat.spells".i8());
+            CurrentCategory.Add(Category.Buff, "cat.buffs".i8());
             CurrentCategory.Add(Category.Ability, "cat.Abilities".i8());
-            CurrentCategory.Add(Category.Item, "cat.Items".i8());
-            CurrentCategory.Add(Category.Consumable, "cat.Consumables".i8());
+            CurrentCategory.Add(Category.Equipment, "cat.Equipment".i8());
 
 
             ShowShort.BindToView(showShort);
@@ -847,7 +846,7 @@ namespace BubbleBuffs {
             ShowNotRequested.BindToView(showNotRequested);
             SortByName.BindToView(sortByName);
 
-            CurrentCategory.Selected.Value = Category.Spell;
+            CurrentCategory.Selected.Value = Category.Buff;
         }
 
         private bool previousSortByName = false;
@@ -2051,10 +2050,9 @@ namespace BubbleBuffs {
         }
     }
      public enum Category {
-        Spell,
+        Buff,
         Ability,
-        Item,
-        Consumable,
+        Equipment,
     }
 
     public enum BuffGroup {

@@ -135,7 +135,7 @@ namespace BubbleBuffs {
         public Action OnUpdate = null;
         internal String NameLower;
         internal Spellbook book;
-        internal Category Category = Category.Spell;
+        internal Category Category = Category.Buff;
         internal SavedBuffState SavedState;
         public int SourcePriorityOverride = -1; // -1 = use global
         public bool UseSpells = true;

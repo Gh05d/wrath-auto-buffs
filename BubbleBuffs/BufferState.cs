@@ -200,7 +200,7 @@ namespace BubbleBuffs {
                                         creditClamp: 1,
                                         charIndex: characterIndex,
                                         archmageArmor: false,
-                                        category: Category.Consumable,
+                                        category: Category.Buff,
                                         sourceType: BuffSourceType.Potion,
                                         sourceItem: itemGroup.First());
                             }
@@ -242,7 +242,7 @@ namespace BubbleBuffs {
                                         creditClamp: int.MaxValue,
                                         charIndex: characterIndex,
                                         archmageArmor: false,
-                                        category: Category.Consumable,
+                                        category: Category.Buff,
                                         sourceType: BuffSourceType.Scroll,
                                         sourceItem: itemGroup.First());
                             }
@@ -412,7 +412,7 @@ namespace BubbleBuffs {
 
         //private static Dictionary<Guid, List<ContextActionApplyBuff>> CachedBuffEffects;
 
-        public void AddBuff(UnitEntityData dude, Kingmaker.UnitLogic.Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int charIndex, bool archmageArmor = false, Category category = Category.Spell, BuffSourceType sourceType = BuffSourceType.Spell, ItemEntity sourceItem = null) {
+        public void AddBuff(UnitEntityData dude, Kingmaker.UnitLogic.Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int charIndex, bool archmageArmor = false, Category category = Category.Buff, BuffSourceType sourceType = BuffSourceType.Spell, ItemEntity sourceItem = null) {
             //if (spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Point)
             //    Main.Log($"Rejecting {spell.Name} due to being cast-at-point");
 
