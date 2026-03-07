@@ -352,6 +352,12 @@ namespace BubbleBuffs {
                     state.ReservoirCLBuff = caster.ReservoirCLBuff;
                     state.UseAzataZippyMagic = caster.AzataZippyMagic;
                 }
+                save.SourcePriorityOverride = buff.SourcePriorityOverride;
+                save.ScrollCap = buff.ScrollCap;
+                save.PotionCap = buff.PotionCap;
+                save.UseSpells = buff.UseSpells;
+                save.UseScrolls = buff.UseScrolls;
+                save.UsePotions = buff.UsePotions;
             }
 
 
