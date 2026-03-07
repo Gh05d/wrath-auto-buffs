@@ -1,45 +1,46 @@
-# Bubbles Ultimate Buff Bot Lite Extra Simple (Bubbles)
+# BubbleBuffs (Fork)
+
+A fork of [factubsio's BubbleBuffs](https://github.com/factubsio/BubbleBuffs) — the buff automation mod for **Pathfinder: Wrath of the Righteous**.
+
+## What's Different
+
+This fork continues development of BubbleBuffs with new features:
+
+- **Unified buff sources** — Spells, scrolls, and potions merged into a single "Buffs" tab. One entry per buff regardless of source, with inline source-type controls (checkboxes + priority).
+- **Equipment support** — Activatable quickslot items (staves, wands) as buff sources in a dedicated "Equipment" tab.
+- **Source-type overlays** — Game-native icons on caster portraits showing whether they're casting from spell, scroll, potion, or equipment.
+- **Quick open button** — HUD button to directly open the buff configuration menu without navigating through the spellbook screen first.
+- **Renamed buff groups** — "Normal Buffs", "Quick Buffs", "Important Buffs" (clearer labels).
 
 ## About
-This mod for Pathfinder Wrath of the Righteous adds an in-game option to spellbooks to create buff routines.
 
-To download a pre-built version of this mod, go to Nexus Mod at https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/195
+BubbleBuffs adds an in-game option to spellbooks to create buff routines. Configure which buffs to cast on which party members, then execute entire buff sequences with a single click.
 
+Original mod by [factubsio](https://github.com/factubsio/BubbleBuffs) — download the original from [Nexus Mods](https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/195).
 
-## Development Setup (Windows)
-1. [Install Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (any version)
-2. To debug with Visual Studio, be sure to include the "Game Development with Unity" workload.
-3. Clone this github repository
-4. Go to System Properties > Environment Variables and add WrathPathDebug to the Pathfinder WOTR install path (for example: C:\Program Files (x86)\Steam\steamapps\common\Pathfinder Second Adventure)
+## Development Setup
 
-## Debugging
-Owlcat's wiki is slightly out of date, but still a good resource at https://github.com/spacehamster/OwlcatModdingWiki/wiki/Debugging#debugging-with-visual-studio
+1. Clone this repository
+2. Provide game DLLs — either:
+   - Set `WrathInstallDir` environment variable to your game install path, or
+   - Create `GamePath.props` in the repo root (see [CLAUDE.md](CLAUDE.md) for format)
+3. Build:
+   ```bash
+   dotnet build BubbleBuffs/BubbleBuffs.csproj
+   ```
+4. Output goes to `BubbleBuffs/bin/Debug/` — copy contents to `{GameDir}/Mods/BubbleBuffs/`
 
-Instructions below are updated for Pathfinder Wrath of the Righteous Definitive Edition
-1. To debug, download the [Unity Hub](https://unity3d.com/get-unity/download).  
-2. Go https://unity3d.com/get-unity/download/archive download and install version 2020.3.33f1 of the editor (this coincides with the Pathfinder WOTR Definitive Edition Unity update).
-3. Navigate to [UnityFolder]\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\win64_development_mono\ and copy UnityPlayer.dll and WinPixEventRuntime.dll to [GameDir] and overwrite it (I prefer to save the original UnityPlayer.dll as UnityPlayer.dll.original).
-4. Use text editor open [GameDir]\Wrath_Data\boot.config and add:
-```
-wait-for-managed-debugger=1
-player-connection-debug=1
-```
-5. Run [GameDir]/Wrath.exe, then you will see a dialog with message "You can attach a managed debugger now if you want"
-6. Go to Visual Studio 2022, click menu Debug/Attach Unity Debugger A "Select Unity instance" dialog will show you some thing like..
-```
-Project              Machine              Type    Port       Information
-<no name>            Your_PC_Name         Player  56593      PID:xxxx
-```
-7. Double click on it, then select ok on the debug dialog prompt to begin debugging.
+### Debugging
 
-Note: This project includes a post build option that will automatically update the default mod location in the Pathfinder WOTR mod folder.  To prevent automatically overwriting the existing mod, change the post build option.
+See [Owlcat's modding wiki](https://github.com/spacehamster/OwlcatModdingWiki/wiki/Debugging#debugging-with-visual-studio) for Visual Studio debugging setup with Unity.
 
-### Acknowledgments:  
+## License
 
--   @Balkoth for Buffbot which is the direct inspiration for this
--   Discord members who tested super early broken extra-poop versions!
--   Pathfinder Wrath of The Righteous Discord channel members
--	@Vek17 extra special thanks because this mod is pretty much a copy paste of his to get it off the ground :pray:
--   Join our [Discord](https://discord.gg/bQVwsP7cky)
+[MIT](LICENSE) — originally by Sean Petrie (Vek17) and factubsio (Bubbles).
 
+## Acknowledgments
 
+- [@factubsio](https://github.com/factubsio) for the original BubbleBuffs mod
+- [@Balkoth](https://github.com/Balkoth) for Buffbot, the direct inspiration
+- [@Vek17](https://github.com/Vek17) for the codebase foundation
+- The Pathfinder WotR Discord community
