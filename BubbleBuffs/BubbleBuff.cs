@@ -137,7 +137,7 @@ namespace BubbleBuffs {
         internal Category Category = Category.Spell;
         internal SavedBuffState SavedState;
 
-        public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u) {
+        public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u, BuffSourceType sourceType = BuffSourceType.Spell, Kingmaker.Items.ItemEntity sourceItem = null) {
             if (this.book == null) {
                 this.book = book;
             }
@@ -158,7 +158,9 @@ namespace BubbleBuffs {
                 spell = spell,
                 baseSpell = baseSpell,
                 CharacterIndex = u,
-                ArchmageArmor = this.Key.Archmage
+                ArchmageArmor = this.Key.Archmage,
+                SourceType = sourceType,
+                SourceItem = sourceItem
             };
 
             //providerHandle.InstallDebugListeners();

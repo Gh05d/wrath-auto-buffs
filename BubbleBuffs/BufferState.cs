@@ -1,5 +1,6 @@
 ﻿using Kingmaker.EntitySystem.Entities;
 using Kingmaker.Items;
+using Kingmaker.Blueprints.Items.Equipment;
 using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Abilities.Components;
 using Kingmaker.UnitLogic.Mechanics;
@@ -160,6 +161,97 @@ namespace BubbleBuffs {
                 Main.Error(ex, "finding abilities:");
             }
 
+            try {
+                if (SavedState.ScrollsEnabled || SavedState.PotionsEnabled) {
+                    // Group usable items by blueprint to share credits across stacks
+                    var usableItems = Game.Instance.Player.Inventory
+                        .Where(item => item.Blueprint is BlueprintItemEquipmentUsable usable
+                            && (usable.Type == UsableItemType.Scroll || usable.Type == UsableItemType.Potion))
+                        .GroupBy(item => item.Blueprint)
+                        .ToList();
+
+                    foreach (var itemGroup in usableItems) {
+                        var blueprint = (BlueprintItemEquipmentUsable)itemGroup.Key;
+                        var spellBlueprint = blueprint.Ability;
+                        if (spellBlueprint == null) continue;
+
+                        var isScroll = blueprint.Type == UsableItemType.Scroll;
+                        var isPotion = blueprint.Type == UsableItemType.Potion;
+
+                        if (isScroll && !SavedState.ScrollsEnabled) continue;
+                        if (isPotion && !SavedState.PotionsEnabled) continue;
+
+                        int totalCount = itemGroup.Sum(item => item.Count);
+                        var sharedCredits = new ReactiveProperty<int>(totalCount);
+
+                        if (isPotion) {
+                            for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
+                                UnitEntityData dude = Group[characterIndex];
+                                var abilityData = new AbilityData(spellBlueprint, dude);
+                                Main.Verbose($"      Adding potion buff: {spellBlueprint.Name} for {dude.CharacterName}", "state");
+
+                                AddBuff(dude: dude,
+                                        book: null,
+                                        spell: abilityData,
+                                        baseSpell: null,
+                                        credits: sharedCredits,
+                                        newCredit: false,
+                                        creditClamp: 1,
+                                        charIndex: characterIndex,
+                                        archmageArmor: false,
+                                        category: Category.Consumable,
+                                        sourceType: BuffSourceType.Potion,
+                                        sourceItem: itemGroup.First());
+                            }
+                        } else if (isScroll) {
+                            int scrollCasterLevel = blueprint.CasterLevel;
+                            int scrollDC = 20 + scrollCasterLevel;
+
+                            for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
+                                UnitEntityData dude = Group[characterIndex];
+                                bool canUse = false;
+
+                                bool onClassList = dude.Spellbooks.Any(book =>
+                                    book.Blueprint.SpellList?.SpellsByLevel?.Any(level =>
+                                        level.Spells.Any(s => s == spellBlueprint)) == true);
+
+                                if (onClassList) {
+                                    canUse = true;
+                                } else if (SavedState.UmdMode != UmdMode.SafeOnly) {
+                                    var umdBonus = dude.Stats.SkillUseMagicDevice.ModifiedValue;
+                                    if (SavedState.UmdMode == UmdMode.AlwaysTry) {
+                                        canUse = umdBonus > 0;
+                                    } else {
+                                        // AllowIfPossible: check if guaranteed success is possible (roll + bonus >= DC, worst case roll = 1 excluded, need bonus + 20 >= DC)
+                                        canUse = (umdBonus + 20) >= scrollDC;
+                                    }
+                                }
+
+                                if (!canUse) continue;
+
+                                var abilityData = new AbilityData(spellBlueprint, dude);
+                                Main.Verbose($"      Adding scroll buff: {spellBlueprint.Name} for {dude.CharacterName}", "state");
+
+                                AddBuff(dude: dude,
+                                        book: null,
+                                        spell: abilityData,
+                                        baseSpell: null,
+                                        credits: sharedCredits,
+                                        newCredit: false,
+                                        creditClamp: int.MaxValue,
+                                        charIndex: characterIndex,
+                                        archmageArmor: false,
+                                        category: Category.Consumable,
+                                        sourceType: BuffSourceType.Scroll,
+                                        sourceItem: itemGroup.First());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                Main.Error(ex, "finding scrolls/potions");
+            }
+
             //foreach (var rejectKey in SpellsWithBeneficialBuffs.Where(kv => kv.Value.EmptyIfNull().Empty()).Select(kv => kv.Key)) {
             //    var name = SpellNames[rejectKey];
             //    Main.Verbose($"Rejected spell: {name}", "spell-rejection");
@@ -315,7 +407,7 @@ namespace BubbleBuffs {
 
         //private static Dictionary<Guid, List<ContextActionApplyBuff>> CachedBuffEffects;
 
-        public void AddBuff(UnitEntityData dude, Kingmaker.UnitLogic.Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int charIndex, bool archmageArmor = false, Category category = Category.Spell) {
+        public void AddBuff(UnitEntityData dude, Kingmaker.UnitLogic.Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int charIndex, bool archmageArmor = false, Category category = Category.Spell, BuffSourceType sourceType = BuffSourceType.Spell, ItemEntity sourceItem = null) {
             //if (spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Point)
             //    Main.Log($"Rejecting {spell.Name} due to being cast-at-point");
 
@@ -326,7 +418,7 @@ namespace BubbleBuffs {
 
             if (spell.Blueprint.AssetGuid.m_Guid == MageArmorGuid && !archmageArmor && dude.HasFact(ArchmageArmorFeature)) {
                 Main.Verbose($"        Adding archmage armor", "state");
-                AddBuff(dude, book, spell, null, credits, false, creditClamp, charIndex, true, category);
+                AddBuff(dude, book, spell, null, credits, false, creditClamp, charIndex, true, category, BuffSourceType.Spell, null);
             }
 
 
@@ -350,7 +442,9 @@ namespace BubbleBuffs {
                             creditClamp: creditClamp,
                             charIndex: charIndex,
                             archmageArmor: archmageArmor,
-                            category: category);
+                            category: category,
+                            sourceType: sourceType,
+                            sourceItem: sourceItem);
 
                     addCredit = false;
                 }
@@ -364,7 +458,7 @@ namespace BubbleBuffs {
 
             var key = new BuffKey(spell, archmageArmor);
             if (BuffsByKey.TryGetValue(key, out var buff)) {
-                buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex);
+                buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex, sourceType, sourceItem);
             } else {
                 if (!SpellsWithBeneficialBuffs.TryGetValue(spell.Blueprint.AssetGuid.m_Guid, out var abilityEffect)) {
                     var beneficial = spell.Blueprint.GetBeneficialBuffs();
@@ -391,7 +485,7 @@ namespace BubbleBuffs {
                 buff.SetHidden(HideReason.Short, !abilityEffect.IsLong);
 
                 if (dude != null) {
-                    buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex);
+                    buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex, sourceType, sourceItem);
                 }
 
                 BuffsByKey[key] = buff;
