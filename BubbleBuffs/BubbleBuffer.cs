@@ -349,6 +349,15 @@ namespace BubbleBuffs {
             frameObj.FillParent();
             frame.sprite = normalBorder;
 
+            var (sourceOverlayObj, sourceOverlayRect) = UIHelpers.Create("source-overlay", pRect);
+            sourceOverlayRect.anchorMin = new Vector2(0.55f, 0.0f);
+            sourceOverlayRect.anchorMax = new Vector2(1.0f, 0.35f);
+            sourceOverlayRect.offsetMin = Vector2.zero;
+            sourceOverlayRect.offsetMax = Vector2.zero;
+            portrait.SourceOverlay = sourceOverlayObj.AddComponent<Image>();
+            portrait.SourceOverlay.preserveAspect = true;
+            sourceOverlayObj.SetActive(false);
+
             portrait.Button = p.AddComponent<OwlcatButton>();
             portrait.Button.OnHover.AddListener(h => {
                 frame.sprite = h ? hoverBorder : normalBorder;
@@ -1819,6 +1828,10 @@ namespace BubbleBuffs {
 
         public static Sprite[] UnitFrameSprites = new Sprite[2];
 
+        internal static Sprite scrollOverlayIcon;
+        internal static Sprite potionOverlayIcon;
+        internal static Sprite equipmentOverlayIcon;
+
         public List<OwlcatButton> Buttons = new();
 
         public static void TryAddFeature(UnitEntityData u, string feature) {
@@ -1874,6 +1887,26 @@ namespace BubbleBuffs {
                     applyBuffsImportantSprites = ButtonSprites.Load("apply_buffs_important", new Vector2Int(95, 95));
                 if (showMapSprites == null)
                     showMapSprites = ButtonSprites.Load("show_map", new Vector2Int(95, 95));
+
+                // Load source-type overlay icons from known game blueprints
+                if (scrollOverlayIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintItemEquipmentUsable>("be452dba5acdd9441bb6f45f350f1f6b"); // Scroll of Mage Armor
+                        if (bp != null) scrollOverlayIcon = bp.Icon;
+                    } catch { }
+                }
+                if (potionOverlayIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintItemEquipmentUsable>("a4093c3baac79f243b8a204e2b1e33e2"); // Potion of Cure Light Wounds
+                        if (bp != null) potionOverlayIcon = bp.Icon;
+                    } catch { }
+                }
+                if (equipmentOverlayIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintItemEquipmentUsable>("0e76af02588cad04a8ea5bfebdc9fb40"); // Wand
+                        if (bp != null) equipmentOverlayIcon = bp.Icon;
+                    } catch { }
+                }
 
                 var staticRoot = Game.Instance.UI.Canvas.transform;
                 Main.Verbose("got static root");
@@ -2173,6 +2206,7 @@ namespace BubbleBuffs {
         public OwlcatButton Expand;
         public Image Overlay;
         public Image FullOverlay;
+        public Image SourceOverlay;
         public bool State = false;
 
         public void ExpandOff() {
@@ -2539,15 +2573,29 @@ namespace BubbleBuffs {
                     var who = buff.CasterQueue[i];
                     casterPortraits[i].Image.sprite = targets[who.CharacterIndex].Image.sprite;
                     var bookName = who.book?.Blueprint.Name ?? "";
-                    string sourceLabel = who.SourceType switch {
-                        BuffSourceType.Scroll => $" [{"source.scroll".i8()}]",
-                        BuffSourceType.Potion => $" [{"source.potion".i8()}]",
-                        _ => ""
-                    };
                     if (who.AvailableCredits < 100)
-                        casterPortraits[i].Text.text = $"{who.spent}+{who.AvailableCredits}\n<i>{bookName}</i>{sourceLabel}";
+                        casterPortraits[i].Text.text = $"{who.spent}+{who.AvailableCredits}\n<i>{bookName}</i>";
                     else
-                        casterPortraits[i].Text.text = $"{"available.atwill".i8()}\n<i>{bookName}</i>{sourceLabel}";
+                        casterPortraits[i].Text.text = $"{"available.atwill".i8()}\n<i>{bookName}</i>";
+                    // Set source type overlay icon
+                    if (casterPortraits[i].SourceOverlay != null) {
+                        if (who.SourceType == BuffSourceType.Spell) {
+                            casterPortraits[i].SourceOverlay.gameObject.SetActive(false);
+                        } else {
+                            var overlaySprite = who.SourceType switch {
+                                BuffSourceType.Scroll => GlobalBubbleBuffer.scrollOverlayIcon,
+                                BuffSourceType.Potion => GlobalBubbleBuffer.potionOverlayIcon,
+                                BuffSourceType.Equipment => GlobalBubbleBuffer.equipmentOverlayIcon,
+                                _ => null
+                            };
+                            if (overlaySprite != null) {
+                                casterPortraits[i].SourceOverlay.sprite = overlaySprite;
+                                casterPortraits[i].SourceOverlay.gameObject.SetActive(true);
+                            } else {
+                                casterPortraits[i].SourceOverlay.gameObject.SetActive(false);
+                            }
+                        }
+                    }
                     casterPortraits[i].Text.fontSize = 12;
                     casterPortraits[i].Text.outlineWidth = 0;
                     casterPortraits[i].Image.color = who.Banned ? Color.red : Color.white;
