@@ -10,6 +10,7 @@ using BubbleBuffs.Extensions;
 using Newtonsoft.Json;
 using Kingmaker.Utility;
 using static Kingmaker.Blueprints.BlueprintAbilityResource;
+using UnityEngine;
 
 namespace BubbleBuffs {
 
@@ -137,6 +138,11 @@ namespace BubbleBuffs {
         internal Category Category = Category.Spell;
         internal SavedBuffState SavedState;
         public int SourcePriorityOverride = -1; // -1 = use global
+        public int ScrollCap = -1;  // -1 = no limit
+        public int PotionCap = -1;  // -1 = no limit
+        public bool UseSpells = true;
+        public bool UseScrolls = true;
+        public bool UsePotions = true;
 
         public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u, BuffSourceType sourceType = BuffSourceType.Spell, Kingmaker.Items.ItemEntity sourceItem = null) {
             if (this.book == null) {
@@ -189,6 +195,11 @@ namespace BubbleBuffs {
             if (state.IgnoreForOverwriteCheck != null) {
                 IgnoreForOverwriteCheck = state.IgnoreForOverwriteCheck.Select(gstr => Guid.Parse(gstr)).ToHashSet();
             }
+            ScrollCap = state.ScrollCap;
+            PotionCap = state.PotionCap;
+            UseSpells = state.UseSpells;
+            UseScrolls = state.UseScrolls;
+            UsePotions = state.UsePotions;
             SetHidden(HideReason.Blacklisted, state.Blacklisted);
             foreach (var caster in CasterQueue) {
                 if (state.Casters.TryGetValue(caster.Key, out var casterState)) {
@@ -464,6 +475,32 @@ namespace BubbleBuffs {
 
         internal void ChargeCredits(int v) {
             credits.Value -= v;
+        }
+
+        public bool RequiresUmdCheck {
+            get {
+                if (SourceType != BuffSourceType.Scroll) return false;
+                return !who.Spellbooks.Any(b =>
+                    b.Blueprint.SpellList?.SpellsByLevel?.Any(level =>
+                        level.Spells.Any(s => s == spell.Blueprint)) == true);
+            }
+        }
+
+        public int ScrollDC {
+            get {
+                if (SourceItem?.Blueprint is Kingmaker.Blueprints.Items.Equipment.BlueprintItemEquipmentUsable usable)
+                    return 20 + usable.CasterLevel;
+                return 25;
+            }
+        }
+
+        public bool TryUmdCheck() {
+            if (!RequiresUmdCheck) return true;
+            var umdBonus = who.Stats.SkillUseMagicDevice.ModifiedValue;
+            var roll = Random.Range(1, 21);
+            var total = roll + umdBonus;
+            Main.Verbose($"UMD Check: {who.CharacterName} rolled {roll} + {umdBonus} = {total} vs DC {ScrollDC}");
+            return total >= ScrollDC;
         }
     }
 }

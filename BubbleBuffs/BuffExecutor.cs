@@ -119,6 +119,26 @@ namespace BubbleBuffs {
                             continue;
                         }
 
+                        // UMD check for scroll usage
+                        if (caster.SourceType == BuffSourceType.Scroll && caster.RequiresUmdCheck) {
+                            int maxRetries = State.SavedState.UmdRetries;
+                            bool passed = false;
+                            for (int retry = 0; retry < maxRetries; retry++) {
+                                if (caster.TryUmdCheck()) {
+                                    passed = true;
+                                    break;
+                                }
+                            }
+                            if (!passed) {
+                                Main.Verbose($"UMD retries exhausted for {caster.who.CharacterName} using {buff.Name}");
+                                if (badResult == null)
+                                    badResult = tooltip.AddBad(buff);
+                                badResult.messages.Add($"  [{caster.who.CharacterName}] => [{Bubble.GroupById[target].CharacterName}], {"log.umd-retries-exhausted".i8()}");
+                                thisBuffBad++;
+                                continue;
+                            }
+                        }
+
                         // Azata Zippy Magic
                         var priorSpellTasks = tasks.Where(x => x.Caster == caster.who && x.SlottedSpell.UniqueId == caster.SlottedSpell.UniqueId).ToList();
                         
@@ -193,6 +213,13 @@ namespace BubbleBuffs {
                         };
 
                         tasks.Add(task);
+
+                        // Warn if last item of this type
+                        if (caster.SourceType != BuffSourceType.Spell && caster.SourceItem != null) {
+                            if (caster.AvailableCredits <= 1) {
+                                Main.Log($"{"log.last-item-consumed".i8()}: {buff.Name} ({caster.SourceType})");
+                            }
+                        }
 
                         actuallyCast++;
                         thisBuffGood++;
