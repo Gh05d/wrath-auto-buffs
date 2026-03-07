@@ -141,6 +141,7 @@ namespace BubbleBuffs {
         public bool UseSpells = true;
         public bool UseScrolls = true;
         public bool UsePotions = true;
+        public bool UseEquipment = true;
 
         public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u, BuffSourceType sourceType = BuffSourceType.Spell, Kingmaker.Items.ItemEntity sourceItem = null) {
             if (this.book == null) {
@@ -197,6 +198,7 @@ namespace BubbleBuffs {
             UseSpells = state.UseSpells;
             UseScrolls = state.UseScrolls;
             UsePotions = state.UsePotions;
+            UseEquipment = state.UseEquipment;
             SetHidden(HideReason.Blacklisted, state.Blacklisted);
             foreach (var caster in CasterQueue) {
                 if (state.Casters.TryGetValue(caster.Key, out var casterState)) {
@@ -264,6 +266,7 @@ namespace BubbleBuffs {
                     if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
                     if (caster.SourceType == BuffSourceType.Scroll && !UseScrolls) continue;
                     if (caster.SourceType == BuffSourceType.Potion && !UsePotions) continue;
+                    if (caster.SourceType == BuffSourceType.Equipment && !UseEquipment) continue;
 
                     // Available Credit check incorporating Azata Zippy Magic
                     var numberOfSpellCastsByCaster = ActualCastQueue?.Where(x => x.Item2 == caster).Count() ?? 0;
@@ -306,13 +309,13 @@ namespace BubbleBuffs {
 
         public static int[] GetSourceOrder(SourcePriority priority) {
             return priority switch {
-                SourcePriority.SpellsScrollsPotions => new[] { 0, 1, 2 },
-                SourcePriority.SpellsPotionsScrolls => new[] { 0, 2, 1 },
-                SourcePriority.ScrollsSpellsPotions => new[] { 1, 0, 2 },
-                SourcePriority.ScrollsPotionsSpells => new[] { 2, 0, 1 },
-                SourcePriority.PotionsSpellsScrolls => new[] { 1, 2, 0 },
-                SourcePriority.PotionsScrollsSpells => new[] { 2, 1, 0 },
-                _ => new[] { 0, 1, 2 }
+                SourcePriority.SpellsScrollsPotions => new[] { 0, 1, 2, 3 },
+                SourcePriority.SpellsPotionsScrolls => new[] { 0, 2, 1, 3 },
+                SourcePriority.ScrollsSpellsPotions => new[] { 1, 0, 2, 3 },
+                SourcePriority.ScrollsPotionsSpells => new[] { 2, 0, 1, 3 },
+                SourcePriority.PotionsSpellsScrolls => new[] { 1, 2, 0, 3 },
+                SourcePriority.PotionsScrollsSpells => new[] { 2, 1, 0, 3 },
+                _ => new[] { 0, 1, 2, 3 }
             };
         }
 

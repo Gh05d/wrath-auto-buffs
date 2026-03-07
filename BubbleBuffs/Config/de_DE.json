@@ -68,10 +68,14 @@
   "source.spell": "Zauber",
   "source.scroll": "Schriftrolle",
   "source.potion": "Trank",
+  "source.equipment": "Ausrustung",
   "use.spells": "Zauber verwenden",
   "use.scrolls": "Schriftrollen verwenden",
   "use.potions": "Tränke verwenden",
+  "use.equipment": "Ausrustung verwenden",
   "log.umd-failed": "UMD-Probe fehlgeschlagen",
   "log.umd-retries-exhausted": "UMD-Versuche erschöpft",
-  "log.last-item-consumed": "Letztes Item verbraucht"
+  "log.last-item-consumed": "Letztes Item verbraucht",
+  "log.equipment-no-charges": "hat keine Ladungen mehr",
+  "log.equipment-unavailable": "nicht mehr verfugbar"
 }

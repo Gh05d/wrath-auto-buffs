@@ -76,11 +76,15 @@
   "source.spell": "Spell",
   "source.scroll": "Scroll",
   "source.potion": "Potion",
+  "source.equipment": "Equipment",
   "use.spells": "Use Spells",
   "use.scrolls": "Use Scrolls",
   "use.potions": "Use Potions",
+  "use.equipment": "Use Equipment",
   "log.umd-failed": "UMD check failed",
   "log.umd-retries-exhausted": "UMD retries exhausted",
-  "log.last-item-consumed": "Last item consumed"
+  "log.last-item-consumed": "Last item consumed",
+  "log.equipment-no-charges": "is out of charges",
+  "log.equipment-unavailable": "no longer available"
 
 }

@@ -85,6 +85,8 @@ namespace BubbleBuffs {
         public bool UseScrolls = true;
         [JsonProperty]
         public bool UsePotions = true;
+        [JsonProperty]
+        public bool UseEquipment = true;
     }
 
 

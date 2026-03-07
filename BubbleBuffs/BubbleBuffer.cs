@@ -2064,7 +2064,8 @@ namespace BubbleBuffs {
     public enum BuffSourceType {
         Spell,
         Scroll,
-        Potion
+        Potion,
+        Equipment
     }
 
     public enum UmdMode {
