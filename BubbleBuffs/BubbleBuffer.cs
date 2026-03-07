@@ -799,6 +799,33 @@ namespace BubbleBuffs {
                 });
             }
 
+            public void Add(T value, string title, Sprite icon) {
+                var button = MakeButton(title, content);
+
+                if (icon != null) {
+                    var iconObj = new GameObject("tab-icon", typeof(RectTransform));
+                    iconObj.transform.SetParent(button.transform, false);
+                    iconObj.transform.SetAsFirstSibling();
+                    var img = iconObj.AddComponent<Image>();
+                    img.sprite = icon;
+                    img.preserveAspect = true;
+                    var le = iconObj.AddComponent<LayoutElement>();
+                    le.preferredWidth = 24;
+                    le.preferredHeight = 24;
+                }
+
+                var selection = GameObject.Instantiate(selectedPrefab, button.transform);
+                selection.SetActive(false);
+
+                Selected.Subscribe<T>(s => {
+                    selection.SetActive(EqualityComparer<T>.Default.Equals(s, value));
+                });
+                button.GetComponentInChildren<OwlcatButton>().Interactable = true;
+                button.GetComponentInChildren<OwlcatButton>().OnLeftClick.AddListener(() => {
+                    Selected.Value = value;
+                });
+            }
+
         }
 
         public static RectTransform MakeVerticalRect(string name, Transform parent) {
@@ -844,9 +871,9 @@ namespace BubbleBuffs {
             CurrentCategory = new ButtonGroup<Category>(categoryRect);
             CurrentCategory.Selected.Subscribe<Category>(_ => RefreshFiltering());
 
-            CurrentCategory.Add(Category.Buff, "cat.buffs".i8());
-            CurrentCategory.Add(Category.Ability, "cat.Abilities".i8());
-            CurrentCategory.Add(Category.Equipment, "cat.Equipment".i8());
+            CurrentCategory.Add(Category.Buff, "cat.buffs".i8(), GlobalBubbleBuffer.tabBuffsIcon);
+            CurrentCategory.Add(Category.Ability, "cat.Abilities".i8(), GlobalBubbleBuffer.tabAbilitiesIcon);
+            CurrentCategory.Add(Category.Equipment, "cat.Equipment".i8(), GlobalBubbleBuffer.tabEquipmentIcon);
 
 
             ShowShort.BindToView(showShort);
@@ -1832,6 +1859,10 @@ namespace BubbleBuffs {
         internal static Sprite potionOverlayIcon;
         internal static Sprite equipmentOverlayIcon;
 
+        internal static Sprite tabBuffsIcon;
+        internal static Sprite tabEquipmentIcon;
+        internal static Sprite tabAbilitiesIcon;
+
         public List<OwlcatButton> Buttons = new();
 
         public static void TryAddFeature(UnitEntityData u, string feature) {
@@ -1905,6 +1936,25 @@ namespace BubbleBuffs {
                     try {
                         var bp = Resources.GetBlueprint<BlueprintItemEquipmentUsable>("0e76af02588cad04a8ea5bfebdc9fb40"); // Wand
                         if (bp != null) equipmentOverlayIcon = bp.Icon;
+                    } catch { }
+                }
+
+                if (tabBuffsIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintAbility>("9e1ad5d6f87d19e4d8c094b114ab2f51"); // Mage Armor
+                        if (bp != null) tabBuffsIcon = bp.Icon;
+                    } catch { }
+                }
+                if (tabEquipmentIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintItemEquipmentUsable>("0e76af02588cad04a8ea5bfebdc9fb40"); // Wand
+                        if (bp != null) tabEquipmentIcon = bp.Icon;
+                    } catch { }
+                }
+                if (tabAbilitiesIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintAbility>("7bb9eb2042e67bf489c4a7ba8232c6e0"); // Smite Evil
+                        if (bp != null) tabAbilitiesIcon = bp.Icon;
                     } catch { }
                 }
 
