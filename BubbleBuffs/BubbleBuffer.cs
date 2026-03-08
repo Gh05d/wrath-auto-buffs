@@ -1485,9 +1485,9 @@ namespace BubbleBuffs {
 
             var buffGroup = new ButtonGroup<BuffGroup>(groupRect);
 
-            buffGroup.Add(BuffGroup.Long, "group.normal".i8());
-            buffGroup.Add(BuffGroup.Important, "group.important".i8());
-            buffGroup.Add(BuffGroup.Quick, "group.short".i8());
+            buffGroup.Add(BuffGroup.Long, "N", GlobalBubbleBuffer.groupNormalIcon);
+            buffGroup.Add(BuffGroup.Important, "I", GlobalBubbleBuffer.groupImportantIcon);
+            buffGroup.Add(BuffGroup.Quick, "Q", GlobalBubbleBuffer.groupQuickIcon);
 
             castersRect.SetAsLastSibling();
 
@@ -1619,9 +1619,9 @@ namespace BubbleBuffs {
 
             float requiredWidthHalf = Group.Count * 0.033f;
 
-            const float groupHeight = 166.25f;
+            const float groupHeight = 60f;
 
-            groupRect.SetAnchor(0.5f, 0.08f);
+            groupRect.SetAnchor(0.5f, 0.22f);
             groupRect.sizeDelta = new Vector2(300, groupHeight);
             groupRect.pivot = new Vector2(0.5f, 0);
 
@@ -1950,6 +1950,10 @@ namespace BubbleBuffs {
         internal static Sprite tabEquipmentIcon;
         internal static Sprite tabAbilitiesIcon;
 
+        internal static Sprite groupNormalIcon;
+        internal static Sprite groupImportantIcon;
+        internal static Sprite groupQuickIcon;
+
         public List<OwlcatButton> Buttons = new();
 
         public static void TryAddFeature(UnitEntityData u, string feature) {
@@ -2007,6 +2011,13 @@ namespace BubbleBuffs {
                     showMapSprites = ButtonSprites.Load("show_map", new Vector2Int(95, 95));
                 if (openBuffsSprites == null)
                     openBuffsSprites = ButtonSprites.Load("open_buffs", new Vector2Int(95, 95));
+
+                if (groupNormalIcon == null)
+                    groupNormalIcon = AssetLoader.LoadInternal("icons", "apply_buffs_normal.png", new Vector2Int(24, 24));
+                if (groupImportantIcon == null)
+                    groupImportantIcon = AssetLoader.LoadInternal("icons", "apply_buffs_important_normal.png", new Vector2Int(24, 24));
+                if (groupQuickIcon == null)
+                    groupQuickIcon = AssetLoader.LoadInternal("icons", "apply_buffs_short_normal.png", new Vector2Int(24, 24));
 
                 // Load source-type overlay icons from known game blueprints
                 if (scrollOverlayIcon == null) {
