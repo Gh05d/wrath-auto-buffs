@@ -97,6 +97,7 @@ namespace BubbleBuffs {
 
         private Transform leftPanel;
         private Transform rightPanel;
+        private RectTransform detailsRectRef;
 
         public static Dictionary<string, TooltipBaseTemplate> AbilityTooltips = new();
 
@@ -514,6 +515,12 @@ namespace BubbleBuffs {
 
             MakeDetailsView(portraitPrefab, framePrefab, nextPrefab, prevPrefab, togglePrefab, expandButtonPrefab, rightPanel);
             Main.Verbose("made details view");
+
+            // Reparent target portraits into detailsRect so they're not behind the frame background
+            var targetHolder = rightPanel.Find("GroupHolder");
+            if (targetHolder != null && detailsRectRef != null) {
+                targetHolder.SetParent(detailsRectRef, false);
+            }
 
             var partialOverlay = AssetLoader.Materials["bubbly_overlay"];
             partialOverlay.SetFloat("_Speed", 0.3f);
@@ -1022,6 +1029,7 @@ namespace BubbleBuffs {
 
             var detailsHolder = GameObject.Instantiate(framePrefab, content);
             var detailsRect = detailsHolder.GetComponent<RectTransform>();
+            detailsRectRef = detailsRect;
             GameObject.Destroy(detailsHolder.transform.Find("FrameDecor").gameObject);
             Main.Verbose("destroyed FrameDecor");
 
@@ -1029,6 +1037,11 @@ namespace BubbleBuffs {
             detailsRect.sizeDelta = Vector2.zero;
             detailsRect.anchorMin = new Vector2(0f, 0f);
             detailsRect.anchorMax = new Vector2(1f, 1f);
+
+            // Disable raycast on frame background so target portraits underneath can receive clicks
+            var detailsBgImage = detailsHolder.GetComponent<Image>();
+            if (detailsBgImage != null)
+                detailsBgImage.raycastTarget = false;
 
             currentSpellView = view.widgetCache.Get(detailsRect);
             Main.VerboseNotNull(() => currentSpellView);
@@ -1344,8 +1357,8 @@ namespace BubbleBuffs {
             // Inline source controls above caster portraits — 2x2 toggle grid + priority row
             // Uses absolute anchor positioning (like MakeToggle) to avoid layout group conflicts
             var (sourceControlObj, sourceControlRect) = UIHelpers.Create("source-controls", detailsRect);
-            sourceControlRect.anchorMin = new Vector2(0.02f, 0.74f);
-            sourceControlRect.anchorMax = new Vector2(0.78f, 0.90f);
+            sourceControlRect.anchorMin = new Vector2(0.02f, 0.72f);
+            sourceControlRect.anchorMax = new Vector2(0.78f, 0.87f);
             sourceControlRect.offsetMin = Vector2.zero;
             sourceControlRect.offsetMax = Vector2.zero;
             sourceControlObj.SetActive(false); // hidden until buff selected
@@ -1443,8 +1456,6 @@ namespace BubbleBuffs {
             groupHolder.MakeComponent<ContentSizeFitter>(f => {
                 f.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             });
-            castersRect.anchorMin = new Vector2(0.5f, 0.22f);
-            castersRect.anchorMax = new Vector2(0.5f, 0.57f);
             castersRect.SetAnchor(0.5f, 0.45f);
             castersRect.sizeDelta = new Vector2(300, groupHeight);
             castersRect.pivot = new Vector2(0.5f, 0);
