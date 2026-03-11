@@ -7,10 +7,12 @@ A fork of [factubsio's BubbleBuffs](https://github.com/factubsio/BubbleBuffs) �
 This fork continues development of BubbleBuffs with new features:
 
 - **Unified buff sources** — Spells, scrolls, and potions merged into a single "Buffs" tab. One entry per buff regardless of source, with inline source-type controls (checkboxes + priority).
-- **Equipment support** — Activatable quickslot items (staves, wands) as buff sources in a dedicated "Equipment" tab.
+- **Equipment support** — Activatable quickslot items (staves, rods) and wands from inventory as buff sources in a dedicated "Equipment" tab. Wands use the same UMD logic as scrolls.
+- **Redesigned details panel** — Vertical split layout with flex-weighted sections: spell info, source controls, caster/target portraits, and action bar. Add/Remove buttons positioned next to target portraits. Portraits auto-shrink to fit available space.
 - **Source-type overlays** — Game-native icons on caster portraits showing whether they're casting from spell, scroll, potion, or equipment.
 - **Quick open button** — HUD button to directly open the buff configuration menu without navigating through the spellbook screen first.
 - **Renamed buff groups** — "Normal Buffs", "Quick Buffs", "Important Buffs" (clearer labels).
+- **Equipment charge handling** — Proper charge consumption for equipment items and fix for false "out of charges" errors on single-charge items.
 
 ## About
 
