@@ -270,11 +270,15 @@ namespace BuffIt2TheLimit.Extensions {
             if (spell.TryGetComponent<AbilityEffectRunAction>(out var run)) {
                 if (run.Actions.Actions.Any(a => a != null && a is ContextActionSpawnAreaEffect))
                     return true;
-
+                if (run.Actions.Actions.Any(a => a != null && a is ContextActionPartyMembers))
+                    return true;
             }
 
-            return false;
+            // Fallback: blueprint name contains "Communal" as a word boundary
+            if (spell.Name.Contains("Communal"))
+                return true;
 
+            return false;
         }
 
         public static bool HasComponent<T>(this BlueprintScriptableObject bp) => bp.GetComponent<T>() != null;
