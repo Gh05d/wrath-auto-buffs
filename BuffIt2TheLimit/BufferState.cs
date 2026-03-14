@@ -466,6 +466,40 @@ namespace BuffIt2TheLimit {
             JsonSerializer.CreateDefault().Serialize(settingsWriter, SavedState);
         }
 
+        // Extend Rod blueprint GUIDs (Lesser → Normal → Greater, sorted by MaxSpellLevel)
+        private static readonly (string guid, int maxSpellLevel)[] ExtendRodBlueprints = {
+            ("1cf04842d5dbd0f49946b1af1022cd1a", 3),  // Lesser Extend Rod
+            ("1b2a09528da9e9948aa9026037bada90", 6),  // Normal Extend Rod
+            ("9bab0e37c72be78418516e57a5e78a99", 9),   // Greater Extend Rod
+        };
+
+        /// <summary>
+        /// Find the weakest Extend Rod in party inventory that can affect a spell of the given level.
+        /// Uses remainingCharges to track charges within a single Execute() pass.
+        /// Returns the item, or null if no suitable rod is available.
+        /// </summary>
+        public static Kingmaker.Items.ItemEntity FindBestExtendRod(int spellLevel, Dictionary<Kingmaker.Items.ItemEntity, int> remainingCharges) {
+            foreach (var (guid, maxSpellLevel) in ExtendRodBlueprints) {
+                if (spellLevel > maxSpellLevel) continue;
+
+                foreach (var item in Game.Instance.Player.Inventory) {
+                    if (item.Blueprint.AssetGuidThreadSafe != guid) continue;
+
+                    int charges;
+                    if (remainingCharges.TryGetValue(item, out charges)) {
+                        if (charges <= 0) continue;
+                    } else {
+                        charges = item.Charges;
+                        if (charges <= 0) continue;
+                        remainingCharges[item] = charges;
+                    }
+
+                    return item;
+                }
+            }
+            return null;
+        }
+
         private static Dictionary<Guid, AbilityCombinedEffects> SpellsWithBeneficialBuffs = new();
         private static Dictionary<Guid, string> SpellNames = new();
         private static Guid MageArmorGuid = Guid.Parse("9e1ad5d6f87d19e4d8883d63a6e35568");
