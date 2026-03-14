@@ -139,8 +139,8 @@ Stripped-down csproj based on Buff It 2 The Limit. Differences from BI2TL:
 ### Repo Setup
 
 New repo at `~/Code/fix-subsonic-bullshit/`. Requires:
-- `GameInstall/` directory containing game DLLs. Copy structure from BI2TL: `~/Code/wrath-epic-buffing/GameInstall/` (real dir, not a symlink — contains `Wrath_Data/Managed/` with game assemblies). Symlink to BI2TL's GameInstall or copy it.
-- `GamePath.props` with `<WrathInstallDir>` pointing to `$(SolutionDir)GameInstall` (improvement over BI2TL's hardcoded absolute path — portable across machines/renames)
+- `GameInstall/` symlink pointing to the same game DLL location as BI2TL (the existing `~/Code/wrath-epic-buffing/GameInstall/` target)
+- `GamePath.props` with `<WrathInstallDir>` pointing to `$(SolutionDir)GameInstall`
 - Minimal `CLAUDE.md` with build command, deploy command, and key gotchas
 
 ### Deploy
@@ -151,9 +151,9 @@ MOD_DIR="/run/media/deck/3b03f019-ee3d-473e-beb1-98236afc5254/steamapps/common/P
 
 ~/.dotnet/dotnet build FixSubsonicBullshit/FixSubsonicBullshit.csproj -p:SolutionDir="$(pwd)/"
 
-ssh deck-direct "mkdir -p '$MOD_DIR'"
+ssh deck-direct mkdir -p "\"$MOD_DIR\""
 scp FixSubsonicBullshit/bin/Debug/FixSubsonicBullshit.dll FixSubsonicBullshit/Info.json \
-  "deck-direct:$MOD_DIR/"
+  deck-direct:"\"$MOD_DIR/\""
 ```
 
 ### UMM Manifest (Info.json)
