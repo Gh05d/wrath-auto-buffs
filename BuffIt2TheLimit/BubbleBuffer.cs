@@ -2190,8 +2190,36 @@ namespace BuffIt2TheLimit {
                 canvas.AddComponent<BubbleBuffGlobalController>();
             }
 
+            // Compute spellScreen now (null-safe) so SpellbookController can be installed
+            // before the gamepad guard — needed for shortcut execution in gamepad mode
+            // (e.g. Steam Input mapping controller buttons to keyboard shortcuts).
+            var spellScreen = UIHelpers.SpellbookScreen?.gameObject;
+
+            // If SpellbookController was installed on canvas as a gamepad-mode fallback but
+            // the spellbook screen is now available, migrate it to the proper host.
+            if (SpellbookController != null && spellScreen != null
+                    && SpellbookController.gameObject != spellScreen) {
+                Main.Log("[TryInstallUI] Migrating SpellbookController from canvas to spellbook screen");
+                UnityEngine.Object.Destroy(SpellbookController);
+                SpellbookController = null;
+            }
+
+            if (SpellbookController == null) {
+                var host = spellScreen ?? canvas;
+                if (host != null) {
+                    Main.Log($"[TryInstallUI] Installing SpellbookController on {(spellScreen != null ? "spellbook screen" : "canvas (gamepad fallback)")}");
+                    SpellbookController = host.AddComponent<BubbleBuffSpellbookController>();
+                    SpellbookController.CreateBuffstate();
+                }
+            }
+
             if (Game.Instance.IsControllerGamepad) {
                 Main.Log("[TryInstallUI] Skipping PC HUD install — controller mode is Gamepad");
+                return;
+            }
+
+            if (spellScreen == null) {
+                Main.Log("[TryInstallUI] SpellbookScreen not available, cannot install PC HUD");
                 return;
             }
 
@@ -2206,9 +2234,7 @@ namespace BuffIt2TheLimit {
                 //Game.Instance.Player.MainCharacter.Value.Inventory.Add(symbol);
 
                 Main.Verbose("Installing ui");
-                Main.Verbose($"spellscreennull: {UIHelpers.SpellbookScreen == null}");
-                var spellScreen = UIHelpers.SpellbookScreen.gameObject;
-                Main.Verbose("got spell screen");
+                Main.Verbose($"spellscreennull: {spellScreen == null}");
 
                 UnitFrameSprites[0] = AssetLoader.LoadInternal("icons", "UI_HudCharacterFrameBorder_Default.png", new Vector2Int(31, 80));
                 UnitFrameSprites[1] = AssetLoader.LoadInternal("icons", "UI_HudCharacterFrameBorder_Hover.png", new Vector2Int(31, 80));
@@ -2216,12 +2242,6 @@ namespace BuffIt2TheLimit {
 #if DEBUG
                 RemoveOldController(spellScreen);
 #endif
-
-                if (spellScreen.GetComponent<BubbleBuffSpellbookController>() == null) {
-                    Main.Verbose("Creating new controller");
-                    SpellbookController = spellScreen.AddComponent<BubbleBuffSpellbookController>();
-                    SpellbookController.CreateBuffstate();
-                }
 
                 Main.Verbose("loading sprites");
                 if (applyBuffsSprites == null)
