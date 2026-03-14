@@ -372,3 +372,4 @@ FodyWeavers.xsd
 
 # AI Agents
 .claude/
+.worktrees/
