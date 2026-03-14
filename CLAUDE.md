@@ -47,6 +47,10 @@ Builds and SCPs `BuffIt2TheLimit.dll` to Steam Deck mod directory. Requires `dec
 - **EnhancedInventory interop**: Mod loads after `EnhancedInventory` (see `Info.json`). `TryFixEILayout()` adjusts UI positioning when EI is present.
 - **Publicizer scope**: Only DLLs with `Publicize="true"` in csproj have private fields accessible. If you get CS0122 on a game field, check whether the source DLL is publicized.
 - **`Main.Log()` vs `Main.Verbose()`**: `Main.Log()` fires unconditionally, `Main.Verbose()` respects debug flags. Use `Verbose` for per-item scan output. `Log` for important one-time messages only. Diagnostic logging with `Main.Log` in hot paths (RecalculateAvailableBuffs) causes unnecessary inventory iterations every recalculation.
+- **Worktrees need `GamePath.props` + `GameInstall/`**: Both are gitignored. Copy `GamePath.props` from main repo and symlink `GameInstall/` into the worktree, otherwise build fails with 1400+ errors.
+- **`MetamagicData.MetamagicMask` has private set**: Use `Add(Metamagic)` to set flags, `Clear()` to reset. Default constructor is parameterless `new MetamagicData()`. No parameterized constructors exist.
+- **`sourceControlObj` visibility**: Controlled by `sourceCount > 1 || hasSpellProviders` in `UpdateDetailsView`. Was originally `sourceCount > 1` which hid the section for single-source buffs. If adding new controls there, verify visibility conditions.
+- **Nexus Mods changelogs**: Use plain text, not BBCode — the release/change notes field is a simple table.
 
 ## Debug Keybinds (DEBUG builds only)
 
@@ -109,6 +113,7 @@ EngineCastingHandler  →  handles the actual spell casting via game's ability s
 ### Localization
 
 JSON files in `Config/` (en_GB, de_DE, fr_FR, ru_RU, zh_CN) are embedded resources. Access via `"key".i8()` extension method. English (`en_GB.json`) is the fallback. When adding new UI text, add keys to all locale files.
+- **Locale files vary in completeness**: `en_GB` and `de_DE` have all keys. `fr_FR`, `ru_RU`, `zh_CN` are shorter and missing many keys added after the initial fork. Don't assume same line numbers or key presence across locales.
 
 ### Asset Loading
 
