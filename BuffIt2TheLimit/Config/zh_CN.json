@@ -50,5 +50,7 @@
   "use.azatazippymagic": "控制 Azata Zippy 魔法辅助 Buff",
   "nolimit": "不限制",
   "openbuffs.tooltip.header": "打开增益菜单",
-  "openbuffs.tooltip.desc": "直接打开BubbleBuffs配置菜单"
+  "openbuffs.tooltip.desc": "直接打开BubbleBuffs配置菜单",
+  "use.extendrod": "使用延长法术权杖",
+  "log.extend-rod-applied": "延长权杖"
 }

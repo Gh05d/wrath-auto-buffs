@@ -76,6 +76,8 @@
   "use.scrolls": "Schriftrollen verwenden",
   "use.potions": "Tränke verwenden",
   "use.equipment": "Ausrustung verwenden",
+  "use.extendrod": "Extend-Stab verwenden",
+  "log.extend-rod-applied": "Extend-Stab",
   "log.umd-failed": "UMD-Probe fehlgeschlagen",
   "log.umd-retries-exhausted": "UMD-Versuche erschöpft",
   "log.last-item-consumed": "Letztes Item verbraucht",

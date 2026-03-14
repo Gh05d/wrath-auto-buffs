@@ -84,6 +84,8 @@
   "use.scrolls": "Use Scrolls",
   "use.potions": "Use Potions",
   "use.equipment": "Use Equipment",
+  "use.extendrod": "Use Extend Rod",
+  "log.extend-rod-applied": "Extend Rod",
   "log.umd-failed": "UMD check failed",
   "log.umd-retries-exhausted": "UMD retries exhausted",
   "log.last-item-consumed": "Last item consumed",

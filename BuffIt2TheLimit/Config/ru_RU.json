@@ -57,5 +57,7 @@
   "use.azatazippymagic": "Управление дополнительным усилением магии Azata Zippy",
   "nolimit": "без ограничений",
   "openbuffs.tooltip.header": "Открыть меню бафов",
-  "openbuffs.tooltip.desc": "Открыть меню настройки BubbleBuffs напрямую"
+  "openbuffs.tooltip.desc": "Открыть меню настройки BubbleBuffs напрямую",
+  "use.extendrod": "Использовать жезл Продления",
+  "log.extend-rod-applied": "Жезл Продления"
 }
