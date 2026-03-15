@@ -1891,9 +1891,6 @@ namespace BuffIt2TheLimit {
             state.InputDirty = true;
         }
 
-        public void EndBuffPartViewSuppression() {
-            UnitBuffPartView.EndSuppresion();
-        }
 
     }
 
@@ -2093,7 +2090,7 @@ namespace BuffIt2TheLimit {
 
         private void Awake() {
             src = GetComponent<CanvasGroup>();
-            Main.Log($"[SyncBubbleHud] Awake on '{gameObject.name}', src={(src == null ? "NULL" : "ok")}");
+            Main.Verbose($"[SyncBubbleHud] Awake on '{gameObject.name}', src={(src == null ? "NULL" : "ok")}");
         }
 
         private void Update() {
@@ -2101,7 +2098,7 @@ namespace BuffIt2TheLimit {
 
             float alpha = src != null ? src.alpha : -1f;
             if (Mathf.Abs(alpha - lastAlphaLogged) > 0.05f) {
-                Main.Log($"[SyncBubbleHud] alpha={alpha:F2}, bubbleHud.activeSelf={bubbleHud.activeSelf}, waitingForAlpha={waitingForAlpha}");
+                Main.Verbose($"[SyncBubbleHud] alpha={alpha:F2}, bubbleHud.activeSelf={bubbleHud.activeSelf}, waitingForAlpha={waitingForAlpha}");
                 lastAlphaLogged = alpha;
             }
 
@@ -2115,21 +2112,21 @@ namespace BuffIt2TheLimit {
         }
 
         private void OnEnable() {
-            Main.Log($"[SyncBubbleHud] OnEnable, bubbleHud={(bubbleHud == null ? "NULL" : $"activeSelf={bubbleHud.activeSelf}")}, src.alpha={src?.alpha:F2}");
+            Main.Verbose($"[SyncBubbleHud] OnEnable, bubbleHud={(bubbleHud == null ? "NULL" : $"activeSelf={bubbleHud.activeSelf}")}, src.alpha={src?.alpha:F2}");
             waitingForAlpha = true;
             if (bubbleHud != null && !bubbleHud.activeSelf)
                 bubbleHud.SetActive(true);
         }
 
         private void OnDisable() {
-            Main.Log($"[SyncBubbleHud] OnDisable, bubbleHud={(bubbleHud == null ? "NULL" : $"activeSelf={bubbleHud.activeSelf}")}");
+            Main.Verbose($"[SyncBubbleHud] OnDisable, bubbleHud={(bubbleHud == null ? "NULL" : $"activeSelf={bubbleHud.activeSelf}")}");
             waitingForAlpha = false;
             if (bubbleHud != null && bubbleHud.activeSelf)
                 bubbleHud?.SetActive(false);
         }
 
         private void OnDestroy() {
-            Main.Log($"[SyncBubbleHud] OnDestroy — component was destroyed on '{gameObject.name}'");
+            Main.Verbose($"[SyncBubbleHud] OnDestroy — component was destroyed on '{gameObject.name}'");
         }
 
         public void Destroy() { }
@@ -2199,7 +2196,7 @@ namespace BuffIt2TheLimit {
             // the spellbook screen is now available, migrate it to the proper host.
             if (SpellbookController != null && spellScreen != null
                     && SpellbookController.gameObject != spellScreen) {
-                Main.Log("[TryInstallUI] Migrating SpellbookController from canvas to spellbook screen");
+                Main.Verbose("[TryInstallUI] Migrating SpellbookController from canvas to spellbook screen");
                 UnityEngine.Object.Destroy(SpellbookController);
                 SpellbookController = null;
             }
@@ -2207,19 +2204,19 @@ namespace BuffIt2TheLimit {
             if (SpellbookController == null) {
                 var host = spellScreen ?? canvas;
                 if (host != null) {
-                    Main.Log($"[TryInstallUI] Installing SpellbookController on {(spellScreen != null ? "spellbook screen" : "canvas (gamepad fallback)")}");
+                    Main.Verbose($"[TryInstallUI] Installing SpellbookController on {(spellScreen != null ? "spellbook screen" : "canvas (gamepad fallback)")}");
                     SpellbookController = host.AddComponent<BubbleBuffSpellbookController>();
                     SpellbookController.CreateBuffstate();
                 }
             }
 
             if (Game.Instance.IsControllerGamepad) {
-                Main.Log("[TryInstallUI] Skipping PC HUD install — controller mode is Gamepad");
+                Main.Verbose("[TryInstallUI] Skipping PC HUD install — controller mode is Gamepad");
                 return;
             }
 
             if (spellScreen == null) {
-                Main.Log("[TryInstallUI] SpellbookScreen not available, cannot install PC HUD");
+                Main.Verbose("[TryInstallUI] SpellbookScreen not available, cannot install PC HUD");
                 return;
             }
 
@@ -2450,10 +2447,10 @@ namespace BuffIt2TheLimit {
 #endif
                 var ingameMenuView = hudLayout.ChildObject("IngameMenuView");
                 var existingSync = ingameMenuView.GetComponent<SyncBubbleHud>();
-                Main.Log($"[TryInstallUI] IngameMenuView='{ingameMenuView.name}', existingSyncBubbleHud={existingSync != null}, activeSelf={ingameMenuView.activeSelf}, activeInHierarchy={ingameMenuView.activeInHierarchy}");
+                Main.Verbose($"[TryInstallUI] IngameMenuView='{ingameMenuView.name}', existingSyncBubbleHud={existingSync != null}, activeSelf={ingameMenuView.activeSelf}, activeInHierarchy={ingameMenuView.activeInHierarchy}");
                 if (existingSync == null) {
                     ingameMenuView.AddComponent<SyncBubbleHud>();
-                    Main.Log("[TryInstallUI] installed new SyncBubbleHud");
+                    Main.Verbose("[TryInstallUI] installed new SyncBubbleHud");
                 }
 
 

@@ -36,6 +36,11 @@ namespace BuffIt2TheLimit {
         public static BuffGroup? CapturingFor = null;
         public static Action<BuffGroup, KeyCode> OnShortcutCaptured = null;
 
+        // Cached enum arrays to avoid per-frame allocation in Update()
+        private static readonly KeyCode[] KeyboardKeys = ((KeyCode[])Enum.GetValues(typeof(KeyCode)))
+            .TakeWhile(kc => kc < KeyCode.Mouse0).ToArray();
+        private static readonly BuffGroup[] BuffGroups = (BuffGroup[])Enum.GetValues(typeof(BuffGroup));
+
         private void Awake() {
             Instance = this;
         }
@@ -85,8 +90,7 @@ namespace BuffIt2TheLimit {
             var state = GlobalBubbleBuffer.Instance?.SpellbookController?.state;
             if (state != null) {
                 if (CapturingFor.HasValue) {
-                    foreach (KeyCode kc in Enum.GetValues(typeof(KeyCode))) {
-                        if (kc >= KeyCode.Mouse0) break;
+                    foreach (KeyCode kc in KeyboardKeys) {
                         if (Input.GetKeyDown(kc)) {
                             var captured = kc == KeyCode.Escape ? KeyCode.None : kc;
                             OnShortcutCaptured?.Invoke(CapturingFor.Value, captured);
@@ -96,7 +100,7 @@ namespace BuffIt2TheLimit {
                         }
                     }
                 } else {
-                    foreach (BuffGroup group in Enum.GetValues(typeof(BuffGroup))) {
+                    foreach (BuffGroup group in BuffGroups) {
                         var kc = state.GetShortcut(group);
                         if (kc != KeyCode.None && Input.GetKeyDown(kc)) {
                             GlobalBubbleBuffer.Execute(group);

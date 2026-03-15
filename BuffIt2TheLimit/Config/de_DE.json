@@ -92,6 +92,6 @@
   "shortcut.long": "Normal shortcut:",
   "shortcut.quick": "Quick shortcut:",
   "shortcut.important": "Important shortcut:",
-  "shortcut.none": "(none)",
-  "shortcut.press": "(press any key)"
+  "shortcut.none": "(keine)",
+  "shortcut.press": "(Taste drücken)"
 }
