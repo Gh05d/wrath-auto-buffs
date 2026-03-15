@@ -295,6 +295,7 @@ namespace BuffIt2TheLimit {
                     // Scan quickslot items for activatable equipment buffs (wands, rods, etc.)
                     for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
                         UnitEntityData dude = Group[characterIndex];
+                        if (dude.Body.QuickSlots == null) continue;
                         foreach (var slot in dude.Body.QuickSlots) {
                             if (!slot.HasItem) continue;
                             if (!(slot.Item.Blueprint is BlueprintItemEquipmentUsable usableBp)) {
@@ -359,8 +360,6 @@ namespace BuffIt2TheLimit {
 
             lastGroup.Clear();
             lastGroup.AddRange(Group.Select(x => x.UniqueId));
-            foreach (var u in Group)
-                Bubble.GroupById[u.UniqueId] = u;
             InputDirty = false;
 
 
@@ -374,6 +373,7 @@ namespace BuffIt2TheLimit {
         }
 
         internal void Recalculate(bool updateUi) {
+            Bubble.RefreshGroup();
             var group = Bubble.Group;
             if (InputDirty || GroupIsDirty(group)) {
                 AbilityCache.Revalidate();
