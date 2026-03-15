@@ -37,12 +37,22 @@ Output: `BuffIt2TheLimit/bin/Debug/BuffIt2TheLimit.dll` + assets copied to outpu
 ./deploy.sh
 ```
 
-Builds and SCPs `BuffIt2TheLimit.dll` to Steam Deck mod directory. Requires `deck-direct` SSH alias.
+Builds and SCPs `BuffIt2TheLimit.dll` + `Info.json` to Steam Deck mod directory. Requires `deck-direct` SSH alias. Always deploy both — UMM reads the version from `Info.json`, not the DLL.
+
+## Versioning
+
+Version must be updated in **three** files simultaneously:
+1. `BuffIt2TheLimit/BuffIt2TheLimit.csproj` — `<Version>` (controls ZIP filename)
+2. `BuffIt2TheLimit/Info.json` — `"Version"` (UMM reads this)
+3. `Repository.json` — `"Version"` + `"DownloadUrl"` (UMM auto-update)
+
+Use `/release` skill to handle this automatically.
 
 ## Gotchas
 
 - **`-p:SolutionDir` required on Linux**: Without it, `GamePath.props` import fails silently and all 1400+ DLL references break. Always pass it.
 - **`findstr` warnings**: The csproj auto-detection target uses Windows `findstr`. On Linux this produces a harmless warning — ignore it.
+- **`.NET Framework 4.8.1` missing APIs**: `Dictionary.GetValueOrDefault()` doesn't exist. Use `TryGetValue` instead. Other missing APIs: `Index`/`Range` syntax, `IAsyncEnumerable`, `Span<T>` in many contexts.
 - **WidgetPaths version selection**: `Main.Load()` selects a `WidgetPaths` class based on `gameVersion.Major/Minor`. If the game updates, UI element paths may break. Check `UIHelpers.cs` for the hierarchy.
 - **EnhancedInventory interop**: Mod loads after `EnhancedInventory` (see `Info.json`). `TryFixEILayout()` adjusts UI positioning when EI is present.
 - **Publicizer scope**: Only DLLs with `Publicize="true"` in csproj have private fields accessible. If you get CS0122 on a game field, check whether the source DLL is publicized.
@@ -137,6 +147,8 @@ Per-save JSON at `{ModPath}UserSettings/bi2tl-{GameId}.json`. Contains buff assi
 
 - **`BubbleBuff.Validate()`** builds `ActualCastQueue` AND consumes credits via `ChargeCredits()`. By the time `BuffExecutor.Execute()` runs, `credits.Value` is already decremented. Do NOT re-check `AvailableCredits` in Execute — it will always be 0 for single-charge items.
 - **`AddBuff()` merges providers by `BuffKey`**: If the same spell exists from multiple sources (spellbook + wand + scroll), they share one `BubbleBuff` entry. The `Category` is set only on first creation — later providers inherit the existing category. Wand spells that already exist as regular buffs won't appear in the Equipment tab.
+- **`BubbleBuff.IsMass`**: Set in `BufferState.AddBuff()` via `spell.Blueprint.IsMass()`. Mass/communal spells (detected via `AbilityTargetsAround`, `ContextActionPartyMembers`, or name ending in "Communal") use `ValidateMass()` — one credit, one CastTask, all wanted targets marked as given.
+- **`ValidateMass()` target selection**: Iterates `wanted` targets to find one the caster can reach — do NOT use `HashSet.First()` (non-deterministic ordering).
 
 ## Unity UI Layout Patterns
 
