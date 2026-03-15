@@ -23,12 +23,14 @@ The mod uses `Bubble.Group` as the single source of truth for which units partic
 
 **New state:** `Bubble.Group` becomes a cached `List<UnitEntityData>` field. A new `RefreshGroup()` method builds the list:
 
-1. Clear `GroupById`
-2. Copy `ActualGroup` into a new list
-3. For each unit in `ActualGroup`, iterate `unit.Pets`
-4. For each pet: skip if null or not in game (`pet == null || !pet.IsInGame`), skip if already in list, otherwise append
-5. Sort appended pets by UniqueId within each owner for stable ordering (prevents `GroupIsDirty` false positives)
+1. Copy `ActualGroup` into a new list
+2. For each unit in `ActualGroup`, iterate `unit.Pets`
+3. For each pet: skip if null or not in game (`pet == null || !pet.IsInGame`), skip if already in list, otherwise append
+4. Sort appended pets by UniqueId within each owner for stable ordering (prevents `GroupIsDirty` false positives)
+5. Populate `GroupById` from the final list (moved from `RecalculateAvailableBuffs` line 362-363)
 6. Store the result in `Bubble.Group`
+
+**Pet ordering:** All main party members first (preserving `ActualGroup` order), then pets appended after, grouped by owner and sorted by UniqueId within each owner's pets.
 
 The two redundant `Group` properties in `BubbleBuffSpellbookController` and `GlobalBubbleBuffer` are removed. All call sites use `Bubble.Group` instead.
 
@@ -40,11 +42,13 @@ The two redundant `Group` properties in `BubbleBuffSpellbookController` and `Glo
 
 **Problem:** The portrait array `view.targets` is allocated once in `MakeGroupHolder()` at `CreateWindow()` time with `new Portrait[Group.Count]`. If the group size changes after window creation (pets joining/leaving), `PreviewReceivers` (line 2956) and `UpdateTargetBuffColor` (line 2961) iterate `Bubble.Group.Count` but index into the fixed-size `targets[]` array → `IndexOutOfBoundsException`. Similarly, `UpdateCasterDetails` (line 3010) uses `targets[who.CharacterIndex]` for sprite lookup, which will be out of bounds for pets added after window creation.
 
-**Fix:** In `ShowBuffWindow()`, before showing the window, check if `Bubble.Group.Count != view.targets.Length`. If they differ, destroy `Root`, set `WindowCreated = false`, and let the method fall through to `CreateWindow()`. This rebuilds the entire window with the correct portrait count. This is safe because:
+**Fix:** In `ShowBuffWindow()`, call `Bubble.RefreshGroup()` first (before the `WindowCreated` check). Then check if `WindowCreated && Bubble.Group.Count != view.targets.Length`. If they differ, destroy all children of `Root` (NOT `Root` itself — `Root` is created in `Awake()` and `CreateWindow()` expects it to exist), then set `WindowCreated = false`. The method falls through to `CreateWindow()` which repopulates the empty `Root`. This is safe because:
 
-- `CreateWindow()` is already idempotent (creates fresh UI from prefabs)
+- `CreateWindow()` populates `Root` with fresh UI from prefabs — it does not create `Root` itself
 - The window is only shown when opening the spellbook screen, so rebuild latency is invisible
 - Save state is preserved in `BufferState` independently of the UI
+
+**Important:** `RefreshGroup()` must run before the `WindowCreated` guard, not inside `Recalculate()` which runs after. Otherwise `Bubble.Group.Count` would still reflect the old group when the portrait-count check happens.
 
 ### `unit.Pets` API
 
@@ -84,10 +88,10 @@ No new toggle. Pets are always included when present. This matches the user's ex
 | File | Change |
 |------|--------|
 | `BubbleBuffer.cs` (Bubble class, ~3088) | `Group` from property to cached field, add `RefreshGroup()` with null checks and stable ordering |
-| `BubbleBuffer.cs` (~457) | Remove `BubbleBuffSpellbookController.Group`, replace usages with `Bubble.Group` |
-| `BubbleBuffer.cs` (~2495) | Remove `GlobalBubbleBuffer.Group`, replace usages with `Bubble.Group` |
-| `BubbleBuffer.cs` (ShowBuffWindow, ~1851) | Add group-size-change detection, trigger window rebuild |
-| `BufferState.cs` (~376) | Call `Bubble.RefreshGroup()` at start of `Recalculate()` |
+| `BubbleBuffer.cs` (~457) | Remove `BubbleBuffSpellbookController.Group`, replace ~12 unqualified `Group` usages (lines 524, 525, 1346-1360, 1811, 1813, 1821, 1826, 1887) with `Bubble.Group` |
+| `BubbleBuffer.cs` (~2495) | Remove `GlobalBubbleBuffer.Group` (unused — all call sites already use `Bubble.Group`) |
+| `BubbleBuffer.cs` (ShowBuffWindow, ~1851) | Call `RefreshGroup()` before `WindowCreated` check, add group-size-change detection, destroy Root children + reset `WindowCreated` on mismatch |
+| `BufferState.cs` (~376) | Remove `GroupById` population (moved to `RefreshGroup()`) |
 | `BufferState.cs` (QuickSlots scan, ~298) | Add null check for `dude.Body.QuickSlots` |
 
 ## What Does NOT Change
