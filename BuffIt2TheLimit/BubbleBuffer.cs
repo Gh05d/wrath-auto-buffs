@@ -2570,6 +2570,8 @@ namespace BuffIt2TheLimit {
         public static void BindBuffToView(BubbleBuff buff, GameObject view, bool tooltipOnRightClickOnly = false) {
             var button = view.GetComponent<OwlcatButton>();
             string text = buff.Name;
+            if (buff.IsMass)
+                text += " [Mass]";
             //if (buff.Spell.Blueprint.LocalizedDuration.TryGetString(out var duration)) {
             //    text += $"\n<size=70%>{duration}</size>";
             //}
