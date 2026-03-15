@@ -1848,6 +1848,15 @@ namespace BuffIt2TheLimit {
         }
 
         private void ShowBuffWindow() {
+            Bubble.RefreshGroup();
+
+            if (WindowCreated && view.targets.Length != Bubble.Group.Count) {
+                Main.Verbose("Group size changed, rebuilding window");
+                foreach (Transform child in Root.transform) {
+                    GameObject.Destroy(child.gameObject);
+                }
+                WindowCreated = false;
+            }
 
             if (!WindowCreated) {
                 try {
@@ -2794,7 +2803,7 @@ namespace BuffIt2TheLimit {
 
         public void ReorderTargetPortraits() {
             var group = Bubble.Group;
-            for (int i = 0; i < group.Count; i++) {
+            for (int i = 0; i < group.Count && i < targets.Length; i++) {
                 targets[i].Image.sprite = group[i].Portrait.SmallPortrait;
             }
         }
@@ -2950,7 +2959,7 @@ namespace BuffIt2TheLimit {
             if (buff == null && currentSelectedSpell.Value != null)
                 buff = Selected;
 
-            for (int p = 0; p < Bubble.Group.Count; p++)
+            for (int p = 0; p < Bubble.Group.Count && p < targets.Length; p++)
                 UpdateTargetBuffColor(buff, p);
         }
 
