@@ -47,6 +47,7 @@ using Kingmaker.UI.Models.Log.CombatLog_ThreadSystem.LogThreads.Common;
 using Kingmaker.UI.MVVM._PCView.Modificators;
 using Kingmaker.Dungeon.Actions;
 using Kingmaker.Dungeon;
+using Kingmaker.UnitLogic.Parts;
 
 namespace BuffIt2TheLimit {
 
@@ -3086,8 +3087,35 @@ namespace BuffIt2TheLimit {
     }
 
     static class Bubble {
-        public static List<UnitEntityData> Group => Game.Instance.SelectionCharacter.ActualGroup;
+        public static List<UnitEntityData> Group = new();
         public static Dictionary<string, UnitEntityData> GroupById = new();
+
+        public static void RefreshGroup() {
+            var baseGroup = Game.Instance.SelectionCharacter.ActualGroup;
+            var result = new List<UnitEntityData>(baseGroup);
+
+            foreach (var unit in baseGroup) {
+                var petMaster = unit.Get<UnitPartPetMaster>();
+                if (petMaster == null) continue;
+
+                var pets = new List<UnitEntityData>();
+                foreach (var petRef in petMaster.Pets) {
+                    var pet = petRef.Entity;
+                    if (pet != null && pet.IsInGame && !result.Contains(pet)) {
+                        pets.Add(pet);
+                    }
+                }
+                pets.Sort((a, b) => string.Compare(a.UniqueId, b.UniqueId, StringComparison.Ordinal));
+                result.AddRange(pets);
+            }
+
+            Group = result;
+
+            GroupById.Clear();
+            foreach (var u in Group) {
+                GroupById[u.UniqueId] = u;
+            }
+        }
     }
 
 
