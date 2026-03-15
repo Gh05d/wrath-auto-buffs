@@ -70,6 +70,8 @@ Use `/release minor|patch|major` — the skill handles version bump, build, tag,
 - **`MetamagicData.MetamagicMask` has private set**: Use `Add(Metamagic)` to set flags, `Clear()` to reset. Default constructor is parameterless `new MetamagicData()`. No parameterized constructors exist.
 - **`sourceControlObj` visibility**: Controlled by `sourceCount > 1 || hasSpellProviders` in `UpdateDetailsView`. Was originally `sourceCount > 1` which hid the section for single-source buffs. If adding new controls there, verify visibility conditions.
 - **Nexus Mods changelogs**: Use plain text, not BBCode — the release/change notes field is a simple table.
+- **`ilspycmd` stack overflows on large classes** (e.g., `UnitEntityData`). Use smaller part classes instead (e.g., `UnitPartPetMaster`). Publicized DLLs at `obj/Debug/publicized/Assembly-CSharp.dll` work better than originals.
+- **`docs/` directory is gitignored**: Use `git add -f` when committing spec/plan files.
 
 ## Debug Keybinds (DEBUG builds only)
 
@@ -148,6 +150,12 @@ JSON files in `Config/` (en_GB, de_DE, fr_FR, ru_RU, zh_CN) are embedded resourc
 - **`UsableItemType.Scroll/Potion`**: In player inventory. Stack count = credits. Consumed via `Inventory.Remove()`.
 - **QuickSlot items** (`dude.Body.QuickSlots`): Equipment like rods, special items. Many have `Ability = null` (metamagic rods). Charges consumed via `SourceItem.Charges--`.
 - **Equipped item abilities** (`dude.Abilities.RawFacts` with `SourceItem != null`): Staves and worn items. Filtered by `!(Blueprint is BlueprintItemEquipmentUsable)` to avoid double-counting QuickSlot items.
+
+### Pet/Companion API
+
+- **Pet access**: `unit.Get<UnitPartPetMaster>()?.Pets` → `List<EntityPartRef<UnitEntityData, UnitPartPet>>`. Each ref: `.Entity` (UnitEntityData), `.EntityPart` (UnitPartPet with `.Type`, `.Master`). Namespace: `Kingmaker.UnitLogic.Parts`.
+- **`Bubble.Group`** includes pets via `Bubble.RefreshGroup()` — cached field rebuilt from `ActualGroup` + all pets. Single source of truth for scanning, targeting, portraits, save/load.
+- **Portrait array `view.targets` is fixed at window creation**: Any loop iterating `Bubble.Group.Count` and indexing `targets[]` needs `&& i < targets.Length` bounds guard.
 
 ### Save System
 
