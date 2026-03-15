@@ -455,8 +455,6 @@ namespace BuffIt2TheLimit {
         public ReactiveProperty<string> NameFilter = new("");
         public ButtonGroup<Category> CurrentCategory;
 
-        private List<UnitEntityData> Group => Game.Instance.SelectionCharacter.ActualGroup;
-
         public GameObject expandButtonPrefab;
 
         private void CreateWindow() {
@@ -522,8 +520,8 @@ namespace BuffIt2TheLimit {
 
             // Calculate totalCasters upfront (needed by MakeDetailsView)
             totalCasters = 0;
-            for (int i = 0; i < Group.Count; i++) {
-                totalCasters += Group[i].Spellbooks?.Count() ?? 0;
+            for (int i = 0; i < Bubble.Group.Count; i++) {
+                totalCasters += Bubble.Group[i].Spellbooks?.Count() ?? 0;
             }
 
             MakeDetailsView(portraitPrefab, framePrefab, nextPrefab, prevPrefab, togglePrefab, expandButtonPrefab, rightPanel);
@@ -1344,9 +1342,9 @@ namespace BuffIt2TheLimit {
                 var buff = view.Selected;
                 if (buff == null) return;
 
-                for (int i = 0; i < Group.Count; i++) {
-                    if (view.targets[i].Button.Interactable && !buff.UnitWants(Group[i])) {
-                        buff.SetUnitWants(Group[i], true);
+                for (int i = 0; i < Bubble.Group.Count; i++) {
+                    if (view.targets[i].Button.Interactable && !buff.UnitWants(Bubble.Group[i])) {
+                        buff.SetUnitWants(Bubble.Group[i], true);
                     }
                 }
                 state.Recalculate(true);
@@ -1356,9 +1354,9 @@ namespace BuffIt2TheLimit {
                 var buff = view.Selected;
                 if (buff == null) return;
 
-                for (int i = 0; i < Group.Count; i++) {
-                    if (buff.UnitWants(Group[i])) {
-                        buff.SetUnitWants(Group[i], false);
+                for (int i = 0; i < Bubble.Group.Count; i++) {
+                    if (buff.UnitWants(Bubble.Group[i])) {
+                        buff.SetUnitWants(Bubble.Group[i], false);
                     }
                 }
                 state.Recalculate(true);
@@ -1809,9 +1807,9 @@ namespace BuffIt2TheLimit {
             horizontalGroup.childForceExpandWidth = true;
             horizontalGroup.childAlignment = TextAnchor.MiddleCenter;
 
-            view.targets = new Portrait[Group.Count];
+            view.targets = new Portrait[Bubble.Group.Count];
 
-            for (int i = 0; i < Group.Count; i++) {
+            for (int i = 0; i < Bubble.Group.Count; i++) {
                 Portrait portrait = CreatePortrait(groupHeight, groupRect, false, false);
 
                 portrait.GameObject.SetActive(true);
@@ -1819,12 +1817,12 @@ namespace BuffIt2TheLimit {
                 aspect.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
                 aspect.aspectRatio = 0.75f;
 
-                portrait.Image.sprite = Group[i].Portrait.SmallPortrait;
+                portrait.Image.sprite = Bubble.Group[i].Portrait.SmallPortrait;
 
                 int personIndex = i;
 
                 portrait.Button.OnLeftClick.AddListener(() => {
-                    UnitEntityData me = Group[personIndex];
+                    UnitEntityData me = Bubble.Group[personIndex];
                     var buff = view.Selected;
                     if (buff == null)
                         return;
@@ -1885,7 +1883,7 @@ namespace BuffIt2TheLimit {
 
 
         internal void RevalidateSpells() {
-            if (state.GroupIsDirty(Group)) {
+            if (state.GroupIsDirty(Bubble.Group)) {
                 AbilityCache.Revalidate();
             }
 
@@ -2492,8 +2490,6 @@ namespace BuffIt2TheLimit {
         internal void SetButtonState(bool v) {
             buttonsContainer?.SetActive(v);
         }
-
-        public static List<UnitEntityData> Group => Game.Instance.SelectionCharacter.ActualGroup;
 
         public static GlobalBubbleBuffer Instance;
         private static ServiceWindowWatcher UiEventSubscriber;
