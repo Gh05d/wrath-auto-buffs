@@ -275,7 +275,7 @@ namespace BuffIt2TheLimit.Extensions {
             }
 
             // Fallback: blueprint name ends with "Communal" (e.g. "Delay Poison, Communal")
-            if (spell.Name.EndsWith("Communal"))
+            if (spell.Name?.EndsWith("Communal") == true)
                 return true;
 
             return false;
