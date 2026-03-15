@@ -310,6 +310,9 @@ namespace BuffIt2TheLimit {
         private void ValidateMass() {
             if (wanted.Count == 0) return;
 
+            // Azata Zippy Magic is disabled for IsMass spells in EngineCastingHandler,
+            // so no Zippy credit adjustment needed here.
+
             // For mass/communal spells: find one caster, consume one credit, cast once.
             // All wanted targets are marked as given since the spell affects everyone.
             for (int n = 0; n < CasterQueue.Count; n++) {
@@ -325,16 +328,22 @@ namespace BuffIt2TheLimit {
                 if (caster.AvailableCredits < creditsNeeded) continue;
                 if (!caster.SlottedSpell.IsAvailable) continue;
 
-                // Use first wanted target as the cast target (game distributes to all allies)
-                var firstTarget = wanted.First();
-                if (!caster.CanTarget(firstTarget)) continue;
+                // Find a wanted target this caster can reach (game distributes to all allies)
+                string validTarget = null;
+                foreach (var t in wanted) {
+                    if (caster.CanTarget(t)) {
+                        validTarget = t;
+                        break;
+                    }
+                }
+                if (validTarget == null) continue;
 
                 caster.ChargeCredits(creditsNeeded);
                 caster.spent += creditsNeeded;
 
                 if (ActualCastQueue == null)
                     ActualCastQueue = new();
-                ActualCastQueue.Add((firstTarget, caster));
+                ActualCastQueue.Add((validTarget, caster));
 
                 // Mark all wanted targets as given — the spell affects everyone
                 foreach (var target in wanted)

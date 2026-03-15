@@ -274,8 +274,8 @@ namespace BuffIt2TheLimit.Extensions {
                     return true;
             }
 
-            // Fallback: blueprint name contains "Communal" as a word boundary
-            if (spell.Name.Contains("Communal"))
+            // Fallback: blueprint name ends with "Communal" (e.g. "Delay Poison, Communal")
+            if (spell.Name.EndsWith("Communal"))
                 return true;
 
             return false;
