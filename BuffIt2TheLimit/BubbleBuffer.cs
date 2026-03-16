@@ -1128,7 +1128,7 @@ namespace BuffIt2TheLimit {
             }
 
             var spellInfoSection = MakeSection("spell-info-section", 1.2f, 40);
-            var sourceControlsSection = MakeSection("source-controls-section", 0f, 50);
+            var sourceControlsSection = MakeSection("source-controls-section", 0.5f, 30);
             var castersSection = MakeSection("casters-section", 3f, 60);
             var targetsSection = MakeSection("targets-section", 3f, 60);
             _targetsSection = targetsSection.transform;
@@ -1506,7 +1506,7 @@ namespace BuffIt2TheLimit {
             var toggleVLG = toggleSideObj.AddComponent<VerticalLayoutGroup>();
             toggleVLG.childForceExpandHeight = false;
             toggleVLG.childForceExpandWidth = true;
-            toggleVLG.childControlHeight = false;
+            toggleVLG.childControlHeight = true;
             toggleVLG.childControlWidth = true;
             toggleVLG.spacing = 2;
             toggleVLG.childAlignment = TextAnchor.UpperRight;
@@ -1625,7 +1625,9 @@ namespace BuffIt2TheLimit {
 
                 portrait.Expand?.OnLeftClick.AddListener(() => {
                     if (portrait.State) {
-                        SelectedCaster.Value = casterIndex;
+                        SelectedCaster.Value = (view.casterPortraitMap != null && casterIndex < view.casterPortraitMap.Length)
+                            ? view.casterPortraitMap[casterIndex]
+                            : casterIndex;
                         UpdateDetailsView();
                     } else {
                         SelectedCaster.Value = -1;
@@ -2795,6 +2797,7 @@ namespace BuffIt2TheLimit {
         public Portrait[] targets;
         private BufferState state;
         public Portrait[] casterPortraits;
+        public int[] casterPortraitMap;
 
         public GameObject listPrefab;
         public Transform content;
@@ -3017,10 +3020,30 @@ namespace BuffIt2TheLimit {
         }
 
         private void UpdateCasterDetails(BubbleBuff buff) {
+            var seen = new HashSet<string>();
+            var distinctCasters = new List<int>();
+
+            for (int i = 0; i < buff.CasterQueue.Count; i++) {
+                var provider = buff.CasterQueue[i];
+                if (seen.Add(provider.who.UniqueId)) {
+                    bool hasNonSelfOnly = false;
+                    for (int j = i; j < buff.CasterQueue.Count; j++) {
+                        if (buff.CasterQueue[j].who == provider.who && !buff.CasterQueue[j].SelfCastOnly) {
+                            hasNonSelfOnly = true;
+                            break;
+                        }
+                    }
+                    if (hasNonSelfOnly)
+                        distinctCasters.Add(i);
+                }
+            }
+
+            casterPortraitMap = distinctCasters.ToArray();
+
             for (int i = 0; i < casterPortraits.Length; i++) {
-                casterPortraits[i].GameObject.SetActive(i < buff.CasterQueue.Count);
-                if (i < buff.CasterQueue.Count) {
-                    var who = buff.CasterQueue[i];
+                casterPortraits[i].GameObject.SetActive(i < distinctCasters.Count);
+                if (i < distinctCasters.Count) {
+                    var who = buff.CasterQueue[distinctCasters[i]];
                     if (who.CharacterIndex < targets.Length)
                         casterPortraits[i].Image.sprite = targets[who.CharacterIndex].Image.sprite;
                     var bookName = who.book?.Blueprint.Name ?? "";
@@ -3028,7 +3051,6 @@ namespace BuffIt2TheLimit {
                         casterPortraits[i].Text.text = $"{who.spent}+{who.AvailableCredits}\n<i>{bookName}</i>";
                     else
                         casterPortraits[i].Text.text = $"{"available.atwill".i8()}\n<i>{bookName}</i>";
-                    // Set source type overlay icon
                     if (casterPortraits[i].SourceOverlay != null) {
                         if (who.SourceType == BuffSourceType.Spell) {
                             casterPortraits[i].SourceOverlay.gameObject.SetActive(false);

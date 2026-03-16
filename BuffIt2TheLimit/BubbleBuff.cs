@@ -511,7 +511,9 @@ namespace BuffIt2TheLimit {
             }
         }
 
-        public bool SelfCastOnly => spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner;
+        public bool SelfCastOnly =>
+            SourceType == BuffSourceType.Potion ||
+            spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner;
 
         public bool CanTarget(string targetId) {
             if (ArchmageArmor)
