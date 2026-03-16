@@ -22,8 +22,6 @@ namespace BuffIt2TheLimit.Handlers {
         private readonly bool _spendSpellSlot;
         private ModifiableValue.Modifier _casterLevelModifier;
         private bool _rodMetamagicApplied;
-        private bool _metamagicWasNull;
-        private Metamagic _originalMetamagicMask;
 
         #endregion
 
@@ -92,24 +90,8 @@ namespace BuffIt2TheLimit.Handlers {
 
             RemoveSpellResistance();
 
-            // Apply Extend Rod metamagic
-            if (_castTask.MetamagicRodItem != null) {
-                try {
-                    if (_castTask.SpellToCast.MetamagicData == null) {
-                        _metamagicWasNull = true;
-                        _castTask.SpellToCast.MetamagicData = new MetamagicData();
-                        _castTask.SpellToCast.MetamagicData.Add(Metamagic.Extend);
-                    } else {
-                        _metamagicWasNull = false;
-                        _originalMetamagicMask = _castTask.SpellToCast.MetamagicData.MetamagicMask;
-                        _castTask.SpellToCast.MetamagicData.Add(Metamagic.Extend);
-                    }
-                    _rodMetamagicApplied = true;
-                    Main.Verbose($"Applied Extend metamagic via rod for {_castTask.SpellToCast.Name}");
-                } catch (Exception ex) {
-                    Main.Error(ex, "Applying Extend Rod metamagic");
-                }
-            }
+            // Extend Rod metamagic is applied in OnBeforeEventAboutToTrigger, not here.
+            // Applying here would leak to other CastTasks sharing the same SpellToCast.
 
             if (_castTask.SourceType == BuffSourceType.Spell && IsAzataZippyMagicSecondaryCast) {
                 IncreaseSpellSlotsAvailable(_castTask.SpellToCast, _castTask.SpellToCast.SpellSlotCost);
@@ -155,20 +137,26 @@ namespace BuffIt2TheLimit.Handlers {
 
                     // Consume Extend Rod charge and restore metamagic
                     if (_rodMetamagicApplied) {
+                        // Consume rod charge first — must always run even if restore fails.
                         try {
-                            // Restore original MetamagicData state
-                            if (_metamagicWasNull) {
-                                _castTask.SpellToCast.MetamagicData = null;
-                            } else {
-                                _castTask.SpellToCast.MetamagicData.Clear();
-                                _castTask.SpellToCast.MetamagicData.Add(_originalMetamagicMask);
-                            }
-                            // Consume rod charge
                             if (_castTask.MetamagicRodItem != null && _castTask.MetamagicRodItem.IsSpendCharges) {
                                 _castTask.MetamagicRodItem.Charges--;
+                                Main.Verbose($"Extend Rod charge consumed: {_castTask.MetamagicRodItem.Name} ({_castTask.MetamagicRodItem.Charges} remaining)");
                             }
-                        } catch (Exception rodEx) {
-                            Main.Error(rodEx, "Consuming Extend Rod charge");
+                        } catch (Exception chargeEx) {
+                            Main.Error(chargeEx, "Consuming Extend Rod charge");
+                        }
+                        // Restore original MetamagicData state. Null-safe because the first
+                        // handler to fire may already have restored it when SpellToCast is shared.
+                        try {
+                            if (_castTask.OriginalMetamagicWasNull) {
+                                _castTask.SpellToCast.MetamagicData = null;
+                            } else if (_castTask.SpellToCast.MetamagicData != null) {
+                                _castTask.SpellToCast.MetamagicData.Clear();
+                                _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
+                            }
+                        } catch (Exception restoreEx) {
+                            Main.Verbose($"Metamagic restore: {restoreEx.Message}");
                         }
                     }
                 } catch (Exception ex) {
@@ -193,6 +181,33 @@ namespace BuffIt2TheLimit.Handlers {
                     try {
                         // Set proper context so retentions may be released
                         Context = evt.Context;
+
+                        // Apply or clean Extend Rod metamagic for THIS specific cast.
+                        // Must happen here (not constructor) because multiple CastTasks
+                        // share the same SpellToCast when one caster targets multiple units.
+                        if (_castTask.MetamagicRodItem != null) {
+                            try {
+                                if (_castTask.SpellToCast.MetamagicData == null) {
+                                    _castTask.SpellToCast.MetamagicData = new MetamagicData();
+                                }
+                                _castTask.SpellToCast.MetamagicData.Add(Metamagic.Extend);
+                                _rodMetamagicApplied = true;
+                            } catch (Exception ex) {
+                                Main.Error(ex, "Applying Extend Rod metamagic");
+                            }
+                        } else {
+                            // No rod for this cast — clean any leaked Extend from a prior handler
+                            try {
+                                if (_castTask.OriginalMetamagicWasNull) {
+                                    _castTask.SpellToCast.MetamagicData = null;
+                                } else if (_castTask.SpellToCast.MetamagicData != null) {
+                                    _castTask.SpellToCast.MetamagicData.Clear();
+                                    _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
+                                }
+                            } catch (Exception ex) {
+                                Main.Verbose($"Extend leak cleanup: {ex.Message}");
+                            }
+                        }
 
                         // Check for needed arcanist reservoir points
                         // Don't spend points if this is an Azata Zippy Magic secondary cast
