@@ -96,7 +96,7 @@ namespace BuffIt2TheLimit.Extensions {
         public static IEnumerable<IBeneficialEffect> GetBeneficialBuffs(this GameAction action, int level = 0) {
             if (action != null) {
                 LogVerbose(level, $"Extracting buffs from: {action.name}, {action.GetType().Name}");
-                if (action is ContextActionApplyBuff applyBuff && applyBuff.Buff.IsBeneficial(level + 1)) {
+                if (action is ContextActionApplyBuff applyBuff && applyBuff.Buff != null && applyBuff.Buff.IsBeneficial(level + 1)) {
                     yield return new BuffEffect(applyBuff);
                     LogVerbose(level + 1, $"FOUND: applyBuff {action.name}");
                 } else if (action is ContextActionsOnPet enchantPet) {
