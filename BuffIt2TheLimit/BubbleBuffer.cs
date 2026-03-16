@@ -1720,19 +1720,19 @@ namespace BuffIt2TheLimit {
 
                 useSpellsObj.SetActive(hasSpellProviders);
                 if (hasSpellProviders)
-                    useSpellsToggle.isOn = buff.SavedState?.UseSpells ?? true;
+                    useSpellsToggle.isOn = buff.UseSpells;
 
                 useScrollsObj.SetActive(hasScrollProviders);
                 if (hasScrollProviders)
-                    useScrollsToggle.isOn = buff.SavedState?.UseScrolls ?? true;
+                    useScrollsToggle.isOn = buff.UseScrolls;
 
                 usePotionsObj.SetActive(hasPotionProviders);
                 if (hasPotionProviders)
-                    usePotionsToggle.isOn = buff.SavedState?.UsePotions ?? true;
+                    usePotionsToggle.isOn = buff.UsePotions;
 
                 useEquipmentObj.SetActive(hasEquipmentProviders);
                 if (hasEquipmentProviders)
-                    useEquipmentToggle.isOn = buff.SavedState?.UseEquipment ?? true;
+                    useEquipmentToggle.isOn = buff.UseEquipment;
 
                 // Extend Rod toggle — always visible when source controls are shown
                 useExtendRodToggle.isOn = buff.UseExtendRod;
