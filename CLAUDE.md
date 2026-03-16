@@ -71,6 +71,9 @@ Use `/release minor|patch|major` — the skill handles version bump, build, tag,
 - **`MetamagicData.MetamagicMask` has private set**: Use `Add(Metamagic)` to set flags, `Clear()` to reset. Default constructor is parameterless `new MetamagicData()`. No parameterized constructors exist.
 - **`sourceControlObj` visibility**: Controlled by `sourceCount > 1 || hasSpellProviders` in `UpdateDetailsView`. Was originally `sourceCount > 1` which hid the section for single-source buffs. If adding new controls there, verify visibility conditions.
 - **Nexus Mods changelogs**: Use plain text, not BBCode — the release/change notes field is a simple table.
+- **Nexus Mods description**: Uses BBCode formatting (`[b]`, `[size]`, `[url]`), not Markdown.
+- **`BuffProvider.SelfCastOnly` is a computed property** (not a settable field): Returns `true` for `SourceType == Potion` or `spell.TargetAnchor == Owner`. To change self-only logic, modify the property getter in `BubbleBuff.cs`, don't try to set it.
+- **Caster portrait index ≠ CasterQueue index**: `BufferView.casterPortraitMap` maps portrait indices to CasterQueue indices after deduplication. Always use the map when translating portrait clicks to CasterQueue entries.
 - **`ilspycmd` stack overflows on large classes** (e.g., `UnitEntityData`). Use smaller part classes instead (e.g., `UnitPartPetMaster`). Publicized DLLs at `obj/Debug/publicized/Assembly-CSharp.dll` work better than originals.
 - **`docs/` directory is gitignored**: Use `git add -f` when committing spec/plan files.
 
