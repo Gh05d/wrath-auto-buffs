@@ -374,3 +374,4 @@ FodyWeavers.xsd
 .claude/CLAUDE.local.md
 .claude/skills/
 .worktrees/
+.env

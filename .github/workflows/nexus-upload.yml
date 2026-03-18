@@ -1,0 +1,31 @@
+name: Upload to Nexus Mods
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload-to-nexus:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download ${{ github.event.release.tag_name }} --pattern "*.zip" --repo ${{ github.repository }} --clobber
+          ls *.zip || { echo "No zip asset found in release"; exit 1; }
+
+      - name: Get zip filename and version
+        run: |
+          echo "ZIP_FILE=$(ls *.zip)" >> "$GITHUB_ENV"
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Upload to Nexus Mods
+        uses: Nexus-Mods/upload-action@main
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ vars.NEXUSMODS_FILE_GROUP_ID }}
+          filename: ${{ env.ZIP_FILE }}
+          version: ${{ env.VERSION }}
+          description: ${{ github.event.release.body }}
+          file_category: main
