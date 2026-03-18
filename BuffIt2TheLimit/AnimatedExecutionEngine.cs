@@ -1,5 +1,7 @@
 ﻿using BuffIt2TheLimit.Handlers;
 using Kingmaker.PubSubSystem;
+using Kingmaker.RuleSystem;
+using Kingmaker.RuleSystem.Rules.Abilities;
 using Kingmaker.UnitLogic.Commands;
 using Kingmaker.UnitLogic.Commands.Base;
 using Kingmaker.Utility;
@@ -13,12 +15,19 @@ namespace BuffIt2TheLimit {
     public class AnimatedExecutionEngine : IBuffExecutionEngine {
         private UnitCommand Cast(CastTask task) {
             try {
-                // Subscribe to the RuleCastSpell event that will be executed by the cast command
-                EventBus.Subscribe(new EngineCastingHandler(task));
+                if (task.SourceType != BuffSourceType.Spell) {
+                    // Equipment/scroll/potion: use instant cast.
+                    // UnitUseAbility.CreateCastCommand rejects synthetic AbilityData
+                    // that isn't in the caster's actual ability list.
+                    EventBus.Subscribe(new EngineCastingHandler(task, true));
+                    Rulebook.Trigger<RuleCastSpell>(new(task.SpellToCast, task.Target));
+                    return null;
+                }
 
-                // Return the command that uses animation for casting
+                // Spells: use animated command (real AbilityData from spellbook)
+                EventBus.Subscribe(new EngineCastingHandler(task));
                 return UnitUseAbility.CreateCastCommand(task.SpellToCast, task.Target);
-            } 
+            }
             catch (Exception ex) {
                 Main.Error(ex, "Animated Engine Casting");
                 return null;
@@ -54,8 +63,10 @@ namespace BuffIt2TheLimit {
                     }
 
                     current = Cast(queue.Current);
-                    queue.Current.Caster.Commands.Run(current);
-                    running[i] = current;
+                    if (current != null) {
+                        queue.Current.Caster.Commands.Run(current);
+                        running[i] = current;
+                    }
                     break;
                 }
 
