@@ -1630,9 +1630,15 @@ namespace BuffIt2TheLimit {
                 });
             }
 
+            // Position on the window root (content.parent) so checkboxes align
+            // with the gear/settings button which is also on the window root.
             var groupObj = new GameObject("buff-group", typeof(RectTransform));
             var groupRect = groupObj.GetComponent<RectTransform>();
-            groupRect.SetParent(actionBarSection.transform, false);
+            groupRect.SetParent(content.parent, false);
+            groupRect.anchorMin = new Vector2(0.40f, 0.10f);
+            groupRect.anchorMax = new Vector2(0.80f, 0.15f);
+            groupRect.offsetMin = Vector2.zero;
+            groupRect.offsetMax = Vector2.zero;
             var buffGroupHLG = groupObj.AddComponent<HorizontalLayoutGroup>();
             buffGroupHLG.childForceExpandWidth = true;
             buffGroupHLG.childForceExpandHeight = true;
@@ -1640,11 +1646,6 @@ namespace BuffIt2TheLimit {
             buffGroupHLG.childControlHeight = true;
             buffGroupHLG.spacing = 8;
             buffGroupHLG.padding = new RectOffset(8, 8, 0, 0);
-            var groupLE = groupObj.AddComponent<LayoutElement>();
-            groupLE.flexibleWidth = 1;
-            groupLE.preferredHeight = 38;
-            groupLE.flexibleHeight = 0;
-            groupLE.layoutPriority = 3;
             groupObj.SetActive(false);
 
             float groupToggleScale = 0.7f;
