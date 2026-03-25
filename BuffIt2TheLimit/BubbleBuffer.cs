@@ -20,6 +20,7 @@ using Kingmaker.UI.MVVM._VM.Tooltip.Utils;
 using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 using Kingmaker.Utility;
 using Newtonsoft.Json;
 using Owlcat.Runtime.UI.Controls.Button;
@@ -756,6 +757,16 @@ namespace BuffIt2TheLimit {
                 });
             }
 
+            {
+                var (toggle, _) = MakeSettingsToggle(togglePrefab, panel.transform, "setting-songs-enabled".i8());
+                toggle.isOn = state.SavedState.SongsEnabled;
+                toggle.onValueChanged.AddListener(enabled => {
+                    state.SavedState.SongsEnabled = enabled;
+                    state.InputDirty = true;
+                    state.Save(true);
+                });
+            }
+
             // UMD Retries (label + buttons)
             {
                 var labelObj = GameObject.Instantiate(togglePrefab, panel.transform);
@@ -986,6 +997,7 @@ namespace BuffIt2TheLimit {
             CurrentCategory.Add(Category.Buff, "cat.buffs".i8(), GlobalBubbleBuffer.tabBuffsIcon);
             CurrentCategory.Add(Category.Ability, "cat.Abilities".i8(), GlobalBubbleBuffer.tabAbilitiesIcon);
             CurrentCategory.Add(Category.Equipment, "cat.Equipment".i8(), GlobalBubbleBuffer.tabEquipmentIcon);
+            CurrentCategory.Add(Category.Song, "cat.Songs".i8(), GlobalBubbleBuffer.tabSongsIcon);
 
 
             ShowShort.BindToView(showShort);
@@ -2222,6 +2234,7 @@ namespace BuffIt2TheLimit {
         internal static Sprite tabBuffsIcon;
         internal static Sprite tabEquipmentIcon;
         internal static Sprite tabAbilitiesIcon;
+        internal static Sprite tabSongsIcon;
 
         internal static Sprite groupNormalIcon;
         internal static Sprite groupImportantIcon;
@@ -2353,6 +2366,12 @@ namespace BuffIt2TheLimit {
                     try {
                         var bp = Resources.GetBlueprint<BlueprintAbility>("7bb9eb2042e67bf489c4a7ba8232c6e0"); // Smite Evil
                         if (bp != null) tabAbilitiesIcon = bp.Icon;
+                    } catch { }
+                }
+                if (tabSongsIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintActivatableAbility>("5250c10feed9f8744850fa3b4814e7c0"); // Inspire Courage
+                        if (bp != null) tabSongsIcon = bp.Icon;
                     } catch { }
                 }
 
@@ -2710,10 +2729,15 @@ namespace BuffIt2TheLimit {
             //}
             view.ChildObject("Name/NameLabel").GetComponent<TextMeshProUGUI>().text = text;
 
-            view.ChildObject("Icon/IconImage").GetComponent<Image>().sprite = buff.Spell.Blueprint.Icon;
+            view.ChildObject("Icon/IconImage").GetComponent<Image>().sprite = buff.Icon;
             view.ChildObject("Icon/IconImage").GetComponent<Image>().color = buff.Key.Archmage ? Color.yellow : Color.white;
             view.ChildObject("Icon/FrameImage").GetComponent<Image>().color = buff.Key.Archmage ? Color.yellow : Color.white;
 
+            if (buff.IsSong) {
+                view.ChildObject("School/SchoolLabel").GetComponent<TextMeshProUGUI>().text = "";
+                view.ChildObject("Metamagic").SetActive(false);
+                return;
+            }
 
             if (buff.Spell.Blueprint.School != Kingmaker.Blueprints.Classes.Spells.SpellSchool.None)
                 view.ChildObject("School/SchoolLabel").GetComponent<TextMeshProUGUI>().text = buff.Spell.Blueprint.School.ToString();
