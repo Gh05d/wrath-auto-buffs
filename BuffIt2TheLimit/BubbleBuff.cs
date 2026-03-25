@@ -8,6 +8,7 @@ using UniRx;
 using Kingmaker.UnitLogic.Mechanics.Actions;
 using BuffIt2TheLimit.Extensions;
 using Newtonsoft.Json;
+using Kingmaker.Blueprints;
 using Kingmaker.Utility;
 using static Kingmaker.Blueprints.BlueprintAbilityResource;
 using UnityEngine;
@@ -29,6 +30,12 @@ namespace BuffIt2TheLimit {
             else
                 MetamagicMask = 0;
             Archmage = archmage;
+        }
+
+        public BuffKey(BlueprintGuid blueprintGuid) {
+            Guid = blueprintGuid.m_Guid;
+            MetamagicMask = 0;
+            Archmage = false;
         }
 
         public override bool Equals(object obj) {

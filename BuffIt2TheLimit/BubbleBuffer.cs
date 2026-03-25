@@ -2588,6 +2588,7 @@ namespace BuffIt2TheLimit {
         Buff,
         Ability,
         Equipment,
+        Song
     }
 
     public enum BuffGroup {
@@ -2600,7 +2601,8 @@ namespace BuffIt2TheLimit {
         Spell,
         Scroll,
         Potion,
-        Equipment
+        Equipment,
+        Song
     }
 
     public enum UmdMode {
