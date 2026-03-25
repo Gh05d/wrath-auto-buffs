@@ -21,10 +21,12 @@ New phase in `BufferState.RecalculateAvailableBuffs()` after the existing three 
 **Phase 4: Activatable Performances**
 - Iterate `dude.ActivatableAbilities.Enumerable` (or `.RawFacts`)
 - Filter on Bard/Skald performances and Azata songs via `BlueprintActivatableAbility.Group` property (e.g., `ActivatableAbilityGroup.BardicPerformance`) or known feature blueprints
-- For each match: create a `BubbleBuff` entry with `Category.Song`, `BuffSourceType.Song`
+- For each match: create a `BubbleBuff` entry via a dedicated `AddSong()` method (NOT `AddBuff()` — see integration notes)
 - Credits = remaining rounds from the performance resource (`AbilityResourceLogic` on the blueprint, queried via `AbilityResource.GetAmount()`)
 - `SelfCastOnly = true` — performances activate on the caster, effect is party-wide
 - No merging with existing spell entries (songs are never simultaneously available as spells)
+
+**Important: Songs bypass `AddBuff()`.** The existing `AddBuff()` method calls `GetBeneficialBuffs()` which requires `AbilityEffectRunAction` on the blueprint — a component that `BlueprintActivatableAbility` does not have. Songs apply buffs through `ActivatableAbilityBuff` components instead. A dedicated `AddSong()` method constructs `BubbleBuff` entries directly, populating `BuffsApplied` from the activatable ability's buff component.
 
 ### 2. Data Model
 
@@ -32,32 +34,43 @@ New phase in `BufferState.RecalculateAvailableBuffs()` after the existing three 
 - `Category.Song` — after `Equipment`
 - `BuffSourceType.Song` — after `Equipment`
 
+**BuffKey extension:**
+- New constructor overload accepting `BlueprintActivatableAbility` GUID (metamagic is always 0 for songs). Songs are keyed by blueprint GUID only.
+
 **BubbleBuff extensions:**
 - `ActivatableAbilityData ActivatableSource` — reference to the activatable ability (analogous to `AbilityData SpellToCast` for spells)
 - `IsSong` — computed property, `true` when `SourceType == Song`
 - Songs always have exactly one caster (no CasterQueue with fallbacks)
+- Song constructor: second constructor (or factory method) that accepts `ActivatableAbilityData` instead of `AbilityData`. Populates `Name` from the activatable blueprint. `Spell` field is null for songs — all `Spell`-dependent accessors must null-guard.
 
 **SaveState extensions:**
-- `SavedBufferState`: new toggle `SongsEnabled` (default `true`)
-- `SavedBuffState`: new toggle `UseSongs` (analogous to `UseSpells`, `UseScrolls`, etc.)
+- `SavedBufferState`: new toggle `SongsEnabled` (default `true`, with `[DefaultValue(true)]` attribute for backward-compatible deserialization of old saves)
+- No per-buff `UseSongs` toggle — redundant since song buffs always have `SourceType == Song`. The global `SongsEnabled` toggle is sufficient.
 - No new caster-specific fields needed — songs have only one possible caster
 
 **BuffProvider:**
-- New provider type for songs, credits based on `AbilityResource.GetAmount()` (remaining rounds)
+- New provider type for songs. Credits use a simple `rounds > 0` boolean rather than the `ReactiveProperty<int>` credit system, since performances consume rounds per combat round (not per activation). UI shows "X rounds remaining" as informational, not as a consumable count.
 
 ### 3. Execution
 
 New path in `BuffExecutor.Execute()`:
-- When `buff.IsSong`: instead of creating a `CastTask`, call `ActivatableAbilityData.TurnOn()` (or the game API equivalent)
-- Pre-checks: (a) not already active (`IsOn`/`IsRunning`), (b) rounds available
+- Song activation happens at the **top** of `Execute()`, before the CastTask iteration loop. Songs are NOT added to `List<CastTask>`.
+- When `buff.IsSong`: check `activatableAbility.IsOn` to detect "already active" (do NOT use `BuffsApplied.IsPresent` — performance buffs may be keyed differently as area effects)
+- Pre-checks: (a) not already active (`IsOn`), (b) rounds > 0 available
+- Activation API: needs verification via `ilspycmd` decompilation of `ActivatableAbility`. Likely candidates: `unit.ActivatableAbilities.GetFact(blueprint)?.TryStart()` or setting `IsOn = true` with game state updates.
 - No `EngineCastingHandler` hook needed — songs don't use metamagic, share transmutation, etc.
 - No `AnimatedExecutionEngine`/`InstantExecutionEngine` — songs use their own activation path
-- Order: activate songs before normal buffs (so performance buffs are active when spells are cast)
+- Songs skip `SortProviders()` entirely — only one caster, no source priority sorting. The `GetSourceOrder` array size is not affected.
+
+**Validation:** A dedicated `ValidateSong()` method (not `Validate()`/`ValidateMass()`) that:
+- Checks `IsOn` on the activatable ability
+- Checks remaining rounds via performance resource
+- Marks the single caster as "given" without consuming spell credits
 
 ### 4. UI
 
 - New "Songs" tab in the tab bar (alongside Buffs/Abilities/Equipment)
-- Per-song display: name, caster portrait, remaining rounds, active/inactive status
+- Per-song display: name, caster portrait, remaining rounds (informational), active/inactive status
 - BuffGroup assignment like normal buffs (Long/Important/Quick checkboxes)
 - No target selection — songs are always `SelfCastOnly`, effect is automatically party-wide
 - Portrait area shows only the single possible caster (no multi-caster dropdown)
@@ -67,9 +80,26 @@ New path in `BuffExecutor.Execute()`:
 - New keys in all locale files: tab name ("Songs"), `SongsEnabled` toggle label, tooltip "Remaining rounds: {0}"
 - `en_GB` and `de_DE` complete, other locales best-effort
 
+### 6. Mutual Exclusivity
+
+Characters can typically only have one bardic performance active at a time (enforced by `ActivatableAbilityGroup.BardicPerformance`). If a user enables two performances from the same character in the same buff group:
+- The game enforces mutual exclusivity — activating a second performance deactivates the first
+- The mod should respect this: within a single execution, only activate the first matching song per `ActivatableAbilityGroup` per caster. Log a warning if a second is skipped.
+
+## Out of Scope
+
+- **Skald rage power acceptance/rejection**: Skald's Inspired Rage grants rage powers to allies who can accept or reject. Managing this interaction is out of scope for the initial implementation.
+- **Song deactivation management**: Songs stay on until manually deactivated. No auto-off logic.
+
 ## Architecture Boundaries
 
-- Song scanning is a self-contained phase in `BufferState` — no changes to existing spell/item scanning
-- Song execution is a separate branch in `BuffExecutor` — no changes to `CastTask`, `EngineCastingHandler`, or execution engines
+- Song scanning is a self-contained phase in `BufferState` via `AddSong()` — no changes to existing `AddBuff()` or spell/item scanning
+- Song execution is a separate branch at the top of `BuffExecutor.Execute()` — no changes to `CastTask`, `EngineCastingHandler`, or execution engines
 - Song UI tab follows the same pattern as existing category tabs — no structural UI changes
-- Save/load extends existing `SavedBufferState`/`SavedBuffState` with new fields, backward-compatible (defaults for missing fields)
+- Save/load extends existing `SavedBufferState` with `SongsEnabled` field, backward-compatible (`[DefaultValue(true)]`)
+- `BubbleBuff.Spell`-dependent code paths must null-guard since songs have `Spell == null`
+
+## Open Questions (Resolve During Implementation)
+
+1. **Activation API**: Decompile `ActivatableAbility` / `ActivatableAbilityData` to confirm the exact method for programmatic activation. Use `ilspycmd` on the relevant game DLL.
+2. **Azata song grouping**: Verify whether Azata songs use `ActivatableAbilityGroup.BardicPerformance` or a separate group — this affects mutual exclusivity handling.
