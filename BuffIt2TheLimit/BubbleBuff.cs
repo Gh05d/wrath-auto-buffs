@@ -576,6 +576,9 @@ namespace BuffIt2TheLimit {
             spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner;
 
         public bool CanTarget(string targetId) {
+            if (SourceType == BuffSourceType.Song)
+                return true; // Songs are party-wide, any target is valid
+
             if (ArchmageArmor)
                 return targetId == who.UniqueId;
 
