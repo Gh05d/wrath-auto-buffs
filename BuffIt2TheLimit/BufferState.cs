@@ -23,6 +23,7 @@ using Kingmaker.UnitLogic.Mechanics.Components;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic;
 using Kingmaker.Blueprints.Classes;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 
 namespace BuffIt2TheLimit {
 
@@ -347,6 +348,24 @@ namespace BuffIt2TheLimit {
                 Main.Error(ex, "finding equipment buffs");
             }
 
+            try {
+                if (SavedState.SongsEnabled) {
+                    for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
+                        UnitEntityData dude = Group[characterIndex];
+                        foreach (var activatable in dude.ActivatableAbilities.RawFacts) {
+                            var blueprint = activatable.Blueprint;
+                            if (!SongGroups.Contains(blueprint.Group))
+                                continue;
+
+                            Main.Verbose($"      Adding song: {blueprint.Name} for {dude.CharacterName}", "state");
+                            AddSong(dude, activatable, characterIndex);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                Main.Error(ex, "finding songs");
+            }
+
             //foreach (var rejectKey in SpellsWithBeneficialBuffs.Where(kv => kv.Value.EmptyIfNull().Empty()).Select(kv => kv.Key)) {
             //    var name = SpellNames[rejectKey];
             //    Main.Verbose($"Rejected spell: {name}", "spell-rejection");
@@ -650,6 +669,38 @@ namespace BuffIt2TheLimit {
             }
         }
 
+
+        private static readonly HashSet<ActivatableAbilityGroup> SongGroups = new() {
+            ActivatableAbilityGroup.BardicPerformance,
+            ActivatableAbilityGroup.AzataMythicPerformance
+        };
+
+        public void AddSong(UnitEntityData dude, ActivatableAbility activatable, int charIndex) {
+            var blueprint = activatable.Blueprint;
+            var key = new BuffKey(blueprint.AssetGuid);
+
+            if (BuffsByKey.TryGetValue(key, out var existing)) {
+                return;
+            }
+
+            var buff = new BubbleBuff(activatable);
+
+            var credits = new ReactiveProperty<int>(activatable.ResourceCount ?? 1);
+            var provider = new BuffProvider(credits) {
+                who = dude,
+                spent = 0,
+                clamp = 1,
+                book = null,
+                spell = null,
+                baseSpell = null,
+                CharacterIndex = charIndex,
+                SourceType = BuffSourceType.Song,
+                SourceItem = null
+            };
+            buff.CasterQueue.Add(provider);
+
+            BuffsByKey[key] = buff;
+        }
 
         private bool CanUseItemWithUmd(UnitEntityData dude, BlueprintAbility spell, int dc) {
             bool onClassList = dude.Spellbooks.Any(book =>
