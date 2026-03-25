@@ -102,5 +102,8 @@
   "shortcut.important": "Important shortcut:",
   "shortcut.none": "(none)",
   "shortcut.press": "(press shortcut)",
-  "shortcut.openbuffmenu": "Open buff menu shortcut:"
+  "shortcut.openbuffmenu": "Open buff menu shortcut:",
+  "cat.Songs": "Songs",
+  "setting-songs-enabled": "Enable song activation",
+  "song.rounds-remaining": "Rounds remaining: {0}"
 }
