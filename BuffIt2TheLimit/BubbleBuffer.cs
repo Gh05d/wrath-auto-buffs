@@ -3095,6 +3095,8 @@ namespace BuffIt2TheLimit {
                     lines.Add(string.Format("tooltip.source.equipment".i8(), equipName));
                     lines.Add(string.Format("tooltip.source.charges".i8(), provider.AvailableCredits));
                     break;
+                default:
+                    return "";
             }
 
             // UMD hint for scroll/wand sources not on class spell list
