@@ -409,7 +409,8 @@ namespace BuffIt2TheLimit {
             }
 
             foreach (var gbuff in BuffList)
-                gbuff.Invalidate();
+                if (executeGroup == null || gbuff.InGroups.Contains(executeGroup.Value))
+                    gbuff.Invalidate();
             foreach (var gbuff in BuffList)
                 if (executeGroup == null || gbuff.InGroups.Contains(executeGroup.Value))
                     gbuff.Validate();
