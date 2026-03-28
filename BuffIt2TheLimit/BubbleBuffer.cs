@@ -3145,11 +3145,20 @@ namespace BuffIt2TheLimit {
                     var who = buff.CasterQueue[distinctCasters[i]];
                     if (who.CharacterIndex < targets.Length)
                         casterPortraits[i].Image.sprite = targets[who.CharacterIndex].Image.sprite;
-                    var bookName = who.book?.Blueprint.Name ?? "";
-                    if (who.AvailableCredits < 100)
-                        casterPortraits[i].Text.text = $"{who.spent}+{who.AvailableCredits}\n<i>{bookName}</i>";
-                    else
-                        casterPortraits[i].Text.text = $"{"available.atwill".i8()}\n<i>{bookName}</i>";
+                    var summaryParts = new List<string>();
+                    foreach (var p in buff.CasterQueue) {
+                        if (p.who.UniqueId != who.who.UniqueId) continue;
+                        string abbr = p.SourceType switch {
+                            BuffSourceType.Spell => "Sp",
+                            BuffSourceType.Scroll => "Sc",
+                            BuffSourceType.Potion => "Po",
+                            BuffSourceType.Equipment => "Eq",
+                            _ => null
+                        };
+                        if (abbr != null)
+                            summaryParts.Add(p.AvailableCredits < 100 ? $"{abbr}:{p.AvailableCredits}" : abbr);
+                    }
+                    casterPortraits[i].Text.text = string.Join(" ", summaryParts);
                     if (casterPortraits[i].SourceOverlay != null) {
                         if (who.SourceType == BuffSourceType.Spell) {
                             casterPortraits[i].SourceOverlay.gameObject.SetActive(false);
