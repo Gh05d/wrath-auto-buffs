@@ -165,7 +165,7 @@ namespace BuffIt2TheLimit {
 
             Main.Verbose($"Begin buff: {buffGroup}");
 
-            State.Recalculate(false, buffGroup);
+            State.Recalculate(false);
 
             // Phase 0: Activate songs before casting buffs
             var activatedGroups = new HashSet<(ActivatableAbilityGroup, string)>();

@@ -400,7 +400,7 @@ namespace BuffIt2TheLimit {
             this.SavedState = save;
         }
 
-        internal void Recalculate(bool updateUi, BuffGroup? executeGroup = null) {
+        internal void Recalculate(bool updateUi) {
             Bubble.RefreshGroup();
             var group = Bubble.Group;
             if (InputDirty || GroupIsDirty(group)) {
@@ -409,11 +409,9 @@ namespace BuffIt2TheLimit {
             }
 
             foreach (var gbuff in BuffList)
-                if (executeGroup == null || gbuff.InGroups.Contains(executeGroup.Value))
-                    gbuff.Invalidate();
+                gbuff.Invalidate();
             foreach (var gbuff in BuffList)
-                if (executeGroup == null || gbuff.InGroups.Contains(executeGroup.Value))
-                    gbuff.Validate();
+                gbuff.Validate();
             foreach (var gbuff in BuffList)
                 gbuff.OnUpdate?.Invoke();
 
