@@ -3158,7 +3158,7 @@ namespace BuffIt2TheLimit {
                         if (abbr != null)
                             summaryParts.Add(p.AvailableCredits < 100 ? $"{abbr}:{p.AvailableCredits}" : abbr);
                     }
-                    casterPortraits[i].Text.text = string.Join(" ", summaryParts);
+                    casterPortraits[i].Text.text = string.Join("\n", summaryParts);
                     if (casterPortraits[i].SourceOverlay != null) {
                         if (who.SourceType == BuffSourceType.Spell) {
                             casterPortraits[i].SourceOverlay.gameObject.SetActive(false);
