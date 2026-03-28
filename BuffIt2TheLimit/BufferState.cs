@@ -93,8 +93,9 @@ namespace BuffIt2TheLimit {
                             }
                         } else if (book.Blueprint.Spontaneous) {
                             for (int level = 1; level <= book.LastSpellbookLevel; level++) {
-                                Main.Verbose($"    Looking at spont level {level}", "state");
-                                ReactiveProperty<int> credits = new ReactiveProperty<int>(book.GetSpellsPerDay(level));
+                                var spellsPerDay = book.GetSpellsPerDay(level);
+                                Main.Log($"[SpontCredits] {dude.CharacterName} book={book.Blueprint.DisplayName} level={level} GetSpellsPerDay={spellsPerDay}");
+                                ReactiveProperty<int> credits = new ReactiveProperty<int>(spellsPerDay);
                                 foreach (var spell in book.GetKnownSpells(level)) {
                                     Main.Verbose($"      Adding spontaneous buff: {spell.Name}", "state");
                                     AddBuff(dude: dude,
