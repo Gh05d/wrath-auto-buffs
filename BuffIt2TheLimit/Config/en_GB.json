@@ -105,5 +105,12 @@
   "shortcut.openbuffmenu": "Open buff menu shortcut:",
   "cat.Songs": "Songs",
   "setting-songs-enabled": "Enable song activation",
-  "song.rounds-remaining": "Rounds remaining: {0}"
+  "song.rounds-remaining": "Rounds remaining: {0}",
+  "tooltip.source.spell": "Spell — {0} (Level {1})",
+  "tooltip.source.scroll": "Scroll — {0}",
+  "tooltip.source.potion": "Potion — {0}",
+  "tooltip.source.equipment": "Equipment — {0}",
+  "tooltip.source.charges": "{0} charges remaining",
+  "tooltip.source.stacks": "{0} remaining",
+  "tooltip.source.umd": "Requires Use Magic Device (DC {0})"
 }

@@ -97,5 +97,12 @@
   "shortcut.openbuffmenu": "Open buff menu shortcut:",
   "cat.Songs": "Songs",
   "setting-songs-enabled": "Song-Aktivierung aktivieren",
-  "song.rounds-remaining": "Verbleibende Runden: {0}"
+  "song.rounds-remaining": "Verbleibende Runden: {0}",
+  "tooltip.source.spell": "Spell — {0} (Level {1})",
+  "tooltip.source.scroll": "Scroll — {0}",
+  "tooltip.source.potion": "Potion — {0}",
+  "tooltip.source.equipment": "Equipment — {0}",
+  "tooltip.source.charges": "{0} Ladungen verbleibend",
+  "tooltip.source.stacks": "{0} verbleibend",
+  "tooltip.source.umd": "Benötigt Use Magic Device (DC {0})"
 }
