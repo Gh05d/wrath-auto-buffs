@@ -3151,6 +3151,7 @@ namespace BuffIt2TheLimit {
             casterPortraitMap = distinctCasters.ToArray();
 
             bool isSelfOnly = distinctCasters.Count == 0 && buff.CasterQueue.Count > 0;
+            Main.Log($"[SelfOnly] {buff.Name}: distinctCasters={distinctCasters.Count} casterQueue={buff.CasterQueue.Count} isSelfOnly={isSelfOnly}");
             castersHolder.SetActive(!isSelfOnly);
             selfCastInfoLabel?.gameObject.SetActive(isSelfOnly);
 
@@ -3171,7 +3172,7 @@ namespace BuffIt2TheLimit {
                             _ => null
                         };
                         if (abbr != null) {
-                            Main.Verbose($"[CasterSummary] {who.who.CharacterName}/{buff.Name}: {abbr} credits={p.AvailableCredits} spent={p.spent} banned={p.Banned} clamp={p.clamp}", "ui");
+                            Main.Log($"[CasterSummary] {who.who.CharacterName}/{buff.Name}: {abbr} credits={p.AvailableCredits} spent={p.spent} banned={p.Banned} clamp={p.clamp} selfCastOnly={p.SelfCastOnly}");
                             summaryParts.Add(p.AvailableCredits < 100 ? $"{abbr}:{p.AvailableCredits}" : abbr);
                         }
                     }
@@ -3210,6 +3211,7 @@ namespace BuffIt2TheLimit {
                             new TooltipConfig { InfoCallPCMethod = InfoCallPCMethod.None });
                     }
                     casterPortraits[i].Text.fontSize = 12;
+                    casterPortraits[i].Text.lineSpacing = 4;
                     casterPortraits[i].Text.outlineWidth = 0;
                     casterPortraits[i].Image.color = who.Banned ? Color.red : Color.white;
                 }
