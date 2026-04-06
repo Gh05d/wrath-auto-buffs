@@ -1400,8 +1400,14 @@ namespace BuffIt2TheLimit {
             reserveRect.offsetMax = Vector2.zero;
             reserveToggle.GetComponentInChildren<OwlcatButton>().OnLeftClick.AddListener(() => {
                 Bubble.ShowReserve = !Bubble.ShowReserve;
+                var prevKey = view.currentSelectedSpell.Value?.Key;
                 view.currentSelectedSpell.Value = null;
                 ShowBuffWindow();
+                if (prevKey.HasValue) {
+                    var match = state.BuffList?.FirstOrDefault(b => b.Key.Equals(prevKey.Value));
+                    if (match != null)
+                        view.currentSelectedSpell.Value = match;
+                }
             });
 
 
