@@ -470,7 +470,7 @@ namespace BuffIt2TheLimit {
                     save.IgnoreForOverwriteCheck = null;
                 }
 
-                foreach (var u in Bubble.Group) {
+                foreach (var u in Bubble.ConfigGroup) {
                     if (buff.UnitWants(u)) {
                         save.Wanted.Add(u.UniqueId);
                     } else if (buff.UnitWantsRemoved(u)) {

@@ -294,15 +294,17 @@ namespace BuffIt2TheLimit {
                 ValidateMass();
                 return;
             }
+            var activePartyIds = new HashSet<string>(Bubble.Group.Select(u => u.UniqueId));
+
             foreach (var target in wanted) {
                 // Skip reserve characters — can't buff someone not in the active party
-                if (!Bubble.Group.Any(u => u.UniqueId == target)) continue;
+                if (!activePartyIds.Contains(target)) continue;
 
                 for (int n = 0; n < CasterQueue.Count; n++) {
                     var caster = CasterQueue[n];
 
                     // Skip reserve casters — can't cast if not in the active party
-                    if (!Bubble.Group.Any(u => u.UniqueId == caster.who.UniqueId)) continue;
+                    if (!activePartyIds.Contains(caster.who.UniqueId)) continue;
 
                     // Skip disabled source types
                     if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
@@ -346,6 +348,8 @@ namespace BuffIt2TheLimit {
         private void ValidateMass() {
             if (wanted.Count == 0) return;
 
+            var activePartyIds = new HashSet<string>(Bubble.Group.Select(u => u.UniqueId));
+
             // Azata Zippy Magic is disabled for IsMass spells in EngineCastingHandler,
             // so no Zippy credit adjustment needed here.
 
@@ -355,7 +359,7 @@ namespace BuffIt2TheLimit {
                 var caster = CasterQueue[n];
 
                 // Skip reserve casters — can't cast if not in the active party
-                if (!Bubble.Group.Any(u => u.UniqueId == caster.who.UniqueId)) continue;
+                if (!activePartyIds.Contains(caster.who.UniqueId)) continue;
 
                 // Skip disabled source types
                 if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
@@ -370,7 +374,7 @@ namespace BuffIt2TheLimit {
                 // Find a wanted target this caster can reach (game distributes to all allies)
                 string validTarget = null;
                 foreach (var t in wanted) {
-                    if (!Bubble.Group.Any(u => u.UniqueId == t)) continue; // Skip reserve targets
+                    if (!activePartyIds.Contains(t)) continue; // Skip reserve targets
                     if (caster.CanTarget(t)) {
                         validTarget = t;
                         break;
@@ -387,7 +391,7 @@ namespace BuffIt2TheLimit {
 
                 // Mark all wanted targets in the active party as given
                 foreach (var target in wanted) {
-                    if (Bubble.Group.Any(u => u.UniqueId == target))
+                    if (activePartyIds.Contains(target))
                         given.Add(target);
                 }
 
