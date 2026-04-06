@@ -535,8 +535,8 @@ namespace BuffIt2TheLimit {
 
             // Calculate totalCasters upfront (needed by MakeDetailsView)
             totalCasters = 0;
-            for (int i = 0; i < Bubble.Group.Count; i++) {
-                totalCasters += Bubble.Group[i].Spellbooks?.Count() ?? 0;
+            for (int i = 0; i < Bubble.ConfigGroup.Count; i++) {
+                totalCasters += Bubble.ConfigGroup[i].Spellbooks?.Count() ?? 0;
             }
 
             MakeDetailsView(portraitPrefab, framePrefab, nextPrefab, prevPrefab, togglePrefab, expandButtonPrefab, rightPanel);
@@ -1369,9 +1369,9 @@ namespace BuffIt2TheLimit {
                 var buff = view.Selected;
                 if (buff == null) return;
 
-                for (int i = 0; i < Bubble.Group.Count && i < view.targets.Length; i++) {
-                    if (view.targets[i].Button.Interactable && !buff.UnitWants(Bubble.Group[i])) {
-                        buff.SetUnitWants(Bubble.Group[i], true);
+                for (int i = 0; i < Bubble.ConfigGroup.Count && i < view.targets.Length; i++) {
+                    if (view.targets[i].Button.Interactable && !buff.UnitWants(Bubble.ConfigGroup[i])) {
+                        buff.SetUnitWants(Bubble.ConfigGroup[i], true);
                     }
                 }
                 state.Recalculate(true);
@@ -1381,9 +1381,9 @@ namespace BuffIt2TheLimit {
                 var buff = view.Selected;
                 if (buff == null) return;
 
-                for (int i = 0; i < Bubble.Group.Count && i < view.targets.Length; i++) {
-                    if (buff.UnitWants(Bubble.Group[i])) {
-                        buff.SetUnitWants(Bubble.Group[i], false);
+                for (int i = 0; i < Bubble.ConfigGroup.Count && i < view.targets.Length; i++) {
+                    if (buff.UnitWants(Bubble.ConfigGroup[i])) {
+                        buff.SetUnitWants(Bubble.ConfigGroup[i], false);
                     }
                 }
                 state.Recalculate(true);
@@ -1964,7 +1964,7 @@ namespace BuffIt2TheLimit {
         private void ShowBuffWindow() {
             Bubble.RefreshGroup();
 
-            if (WindowCreated && view.targets.Length != Bubble.Group.Count) {
+            if (WindowCreated && view.targets.Length != Bubble.ConfigGroup.Count) {
                 Main.Verbose("Group size changed, rebuilding window");
                 foreach (Transform child in Root.transform) {
                     GameObject.Destroy(child.gameObject);
@@ -2938,7 +2938,7 @@ namespace BuffIt2TheLimit {
         private static GameObject BigLabelPrefab => UIHelpers.CharacterScreen.Find("NamePortrait/CharName/CharacterName").gameObject;
 
         public void ReorderTargetPortraits() {
-            var group = Bubble.Group;
+            var group = Bubble.ConfigGroup;
             for (int i = 0; i < group.Count && i < targets.Length; i++) {
                 targets[i].Image.sprite = group[i].Portrait.SmallPortrait;
             }
@@ -3095,7 +3095,7 @@ namespace BuffIt2TheLimit {
             if (buff == null && currentSelectedSpell.Value != null)
                 buff = Selected;
 
-            for (int p = 0; p < Bubble.Group.Count && p < targets.Length; p++)
+            for (int p = 0; p < Bubble.ConfigGroup.Count && p < targets.Length; p++)
                 UpdateTargetBuffColor(buff, p);
         }
 
@@ -3115,7 +3115,7 @@ namespace BuffIt2TheLimit {
                     massGood = true;
             }
 
-            var me = Bubble.Group[i];
+            var me = Bubble.ConfigGroup[i];
 
 
             if (isMass && !buff.UnitWants(me)) {
@@ -3278,7 +3278,7 @@ namespace BuffIt2TheLimit {
                     casterPortraits[i].Image.color = who.Banned ? Color.red : Color.white;
                 }
             }
-            addToAll.GetComponentInChildren<OwlcatButton>().Interactable = buff.Requested != Bubble.Group.Count;
+            addToAll.GetComponentInChildren<OwlcatButton>().Interactable = buff.Requested != Bubble.ConfigGroup.Count;
             removeFromAll.GetComponentInChildren<OwlcatButton>().Interactable = buff.Requested > 0;
         }
 
