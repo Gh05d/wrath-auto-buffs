@@ -603,6 +603,12 @@ namespace BuffIt2TheLimit {
             if (ArchmageArmor)
                 return targetId == who.UniqueId;
 
+            // Reserve targets: skip game's spell.CanTarget (rejects out-of-scene units)
+            // but still respect self-cast-only restrictions
+            if (!Bubble.Group.Any(u => u.UniqueId == targetId)) {
+                return !SelfCastOnly || targetId == who.UniqueId;
+            }
+
             using (new ForceShareTransmutation(this)) {
                 if (!spell.CanTarget(new TargetWrapper(Bubble.GroupById[targetId])))
                     return false;
