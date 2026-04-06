@@ -1400,6 +1400,7 @@ namespace BuffIt2TheLimit {
             reserveRect.offsetMax = Vector2.zero;
             reserveToggle.GetComponentInChildren<OwlcatButton>().OnLeftClick.AddListener(() => {
                 Bubble.ShowReserve = !Bubble.ShowReserve;
+                view.currentSelectedSpell.Value = null;
                 ShowBuffWindow();
             });
 

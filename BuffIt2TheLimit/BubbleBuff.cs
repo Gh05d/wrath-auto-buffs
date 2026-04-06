@@ -458,7 +458,13 @@ namespace BuffIt2TheLimit {
                 : globalPriority;
             var sourceOrder = GetSourceOrder(effectivePriority);
 
+            var activeIds = new HashSet<string>(Bubble.Group.Select(u => u.UniqueId));
             CasterQueue.Sort((a, b) => {
+                // Active party first, reserve last
+                bool aActive = activeIds.Contains(a.who.UniqueId);
+                bool bActive = activeIds.Contains(b.who.UniqueId);
+                if (aActive != bActive) return aActive ? -1 : 1;
+
                 int aSourceWeight = sourceOrder[(int)a.SourceType];
                 int bSourceWeight = sourceOrder[(int)b.SourceType];
                 if (aSourceWeight != bSourceWeight)
