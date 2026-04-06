@@ -146,6 +146,9 @@ namespace BuffIt2TheLimit.Handlers {
                                 _castTask.SpellToCast.MetamagicData.Clear();
                                 _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
                             }
+                            if (Context?.m_Params != null) {
+                                Context.m_Params.Metamagic = _castTask.OriginalMetamagicMask;
+                            }
                         } catch (Exception restoreEx) {
                             Main.Verbose($"Metamagic restore: {restoreEx.Message}");
                         }
@@ -182,6 +185,13 @@ namespace BuffIt2TheLimit.Handlers {
                                     _castTask.SpellToCast.MetamagicData = new MetamagicData();
                                 }
                                 _castTask.SpellToCast.MetamagicData.Add(Metamagic.Extend);
+                                // The RuleCastSpell constructor clones AbilityParams into
+                                // Context.m_Params BEFORE this handler fires. The game reads
+                                // metamagic from the cloned params for duration calculation,
+                                // so we must also set the flag there.
+                                if (Context?.m_Params != null) {
+                                    Context.m_Params.Metamagic |= Metamagic.Extend;
+                                }
                                 _rodMetamagicApplied = true;
                                 // Consume rod charge at cast time (not in HandleExecutionProcessEnd).
                                 // ProcessEnd is unreliable for instant casts — the game may not
@@ -201,6 +211,9 @@ namespace BuffIt2TheLimit.Handlers {
                                 } else if (_castTask.SpellToCast.MetamagicData != null) {
                                     _castTask.SpellToCast.MetamagicData.Clear();
                                     _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
+                                }
+                                if (Context?.m_Params != null) {
+                                    Context.m_Params.Metamagic = _castTask.OriginalMetamagicMask;
                                 }
                             } catch (Exception ex) {
                                 Main.Verbose($"Extend leak cleanup: {ex.Message}");
