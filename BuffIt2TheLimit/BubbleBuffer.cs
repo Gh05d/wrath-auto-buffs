@@ -1844,6 +1844,46 @@ namespace BuffIt2TheLimit {
         private SearchBar search;
 
         private void MakeGroupHolder(GameObject portraitPrefab, GameObject expandButtonPrefab, GameObject buttonPrefab, Transform content) {
+            // Reserve toggle button
+            var toggleObj = new GameObject("ReserveToggle", typeof(RectTransform));
+            var toggleRect = toggleObj.GetComponent<RectTransform>();
+            toggleRect.SetParent(content, false);
+            toggleRect.anchorMin = new Vector2(0f, 0f);
+            toggleRect.anchorMax = new Vector2(0.24f, 0.5f);
+            toggleRect.offsetMin = new Vector2(4, 4);
+            toggleRect.offsetMax = new Vector2(-2, -2);
+
+            var toggleImage = toggleObj.AddComponent<Image>();
+            toggleImage.color = Bubble.ShowReserve ? new Color(0.4f, 0.8f, 0.4f, 0.8f) : new Color(0.3f, 0.3f, 0.3f, 0.8f);
+
+            var toggleButton = toggleObj.AddComponent<OwlcatButton>();
+            toggleButton.SetTooltip(
+                new TooltipTemplateSimple("reserve.toggle".i8(), "reserve.toggle.tooltip".i8()),
+                new TooltipConfig { InfoCallPCMethod = InfoCallPCMethod.None });
+
+            var toggleLabel = new GameObject("Label", typeof(RectTransform));
+            var toggleLabelRect = toggleLabel.GetComponent<RectTransform>();
+            toggleLabelRect.SetParent(toggleRect, false);
+            toggleLabelRect.anchorMin = Vector2.zero;
+            toggleLabelRect.anchorMax = Vector2.one;
+            toggleLabelRect.offsetMin = Vector2.zero;
+            toggleLabelRect.offsetMax = Vector2.zero;
+            var toggleText = toggleLabel.AddComponent<TextMeshProUGUI>();
+            toggleText.text = "reserve.toggle".i8();
+            toggleText.fontSize = 14;
+            toggleText.alignment = TextAlignmentOptions.Center;
+            toggleText.color = Color.white;
+
+            toggleButton.OnLeftClick.AddListener(() => {
+                Bubble.ShowReserve = !Bubble.ShowReserve;
+                // Force full window rebuild
+                foreach (Transform child in Root.transform) {
+                    GameObject.Destroy(child.gameObject);
+                }
+                WindowCreated = false;
+                ShowBuffWindow();
+            });
+
             // ScrollRect viewport
             var scrollObj = new GameObject("PortraitScroll", typeof(RectTransform));
             var scrollRect = scrollObj.GetComponent<RectTransform>();
