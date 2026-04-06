@@ -295,9 +295,14 @@ namespace BuffIt2TheLimit {
                 return;
             }
             foreach (var target in wanted) {
+                // Skip reserve characters — can't buff someone not in the active party
+                if (!Bubble.Group.Any(u => u.UniqueId == target)) continue;
 
                 for (int n = 0; n < CasterQueue.Count; n++) {
                     var caster = CasterQueue[n];
+
+                    // Skip reserve casters — can't cast if not in the active party
+                    if (!Bubble.Group.Any(u => u.UniqueId == caster.who.UniqueId)) continue;
 
                     // Skip disabled source types
                     if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
@@ -349,6 +354,9 @@ namespace BuffIt2TheLimit {
             for (int n = 0; n < CasterQueue.Count; n++) {
                 var caster = CasterQueue[n];
 
+                // Skip reserve casters — can't cast if not in the active party
+                if (!Bubble.Group.Any(u => u.UniqueId == caster.who.UniqueId)) continue;
+
                 // Skip disabled source types
                 if (caster.SourceType == BuffSourceType.Spell && !UseSpells) continue;
                 if (caster.SourceType == BuffSourceType.Scroll && !UseScrolls) continue;
@@ -362,6 +370,7 @@ namespace BuffIt2TheLimit {
                 // Find a wanted target this caster can reach (game distributes to all allies)
                 string validTarget = null;
                 foreach (var t in wanted) {
+                    if (!Bubble.Group.Any(u => u.UniqueId == t)) continue; // Skip reserve targets
                     if (caster.CanTarget(t)) {
                         validTarget = t;
                         break;
@@ -376,9 +385,11 @@ namespace BuffIt2TheLimit {
                     ActualCastQueue = new();
                 ActualCastQueue.Add((validTarget, caster));
 
-                // Mark all wanted targets as given — the spell affects everyone
-                foreach (var target in wanted)
-                    given.Add(target);
+                // Mark all wanted targets in the active party as given
+                foreach (var target in wanted) {
+                    if (Bubble.Group.Any(u => u.UniqueId == target))
+                        given.Add(target);
+                }
 
                 return;
             }
