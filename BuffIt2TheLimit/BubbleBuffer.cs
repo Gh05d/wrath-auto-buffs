@@ -1400,11 +1400,6 @@ namespace BuffIt2TheLimit {
             reserveRect.offsetMax = Vector2.zero;
             reserveToggle.GetComponentInChildren<OwlcatButton>().OnLeftClick.AddListener(() => {
                 Bubble.ShowReserve = !Bubble.ShowReserve;
-                int childCount = Root.transform.childCount;
-                for (int ci = childCount - 1; ci >= 0; ci--) {
-                    GameObject.DestroyImmediate(Root.transform.GetChild(ci).gameObject);
-                }
-                WindowCreated = false;
                 ShowBuffWindow();
             });
 
