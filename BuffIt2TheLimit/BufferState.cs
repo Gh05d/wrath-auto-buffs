@@ -43,12 +43,11 @@ namespace BuffIt2TheLimit {
 
             Main.Verbose("Recalculating full state");
 
-            try {
-                for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
-                    UnitEntityData dude = Group[characterIndex];
-                    Main.Verbose($"Looking at dude: ${dude.CharacterName}", "state");
-                    foreach (var book in dude.Spellbooks) {
-
+            for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
+                UnitEntityData dude = Group[characterIndex];
+                Main.Verbose($"Looking at dude: ${dude.CharacterName}", "state");
+                foreach (var book in dude.Spellbooks) {
+                    try {
                         Main.Verbose($"  Looking at spellbook: {book.Blueprint.DisplayName}", "state");
                         foreach (var spell in book.GetCustomSpells(0)) {
                             ReactiveProperty<int> credits = new ReactiveProperty<int>(500);
@@ -75,7 +74,7 @@ namespace BuffIt2TheLimit {
                                     creditClamp: int.MaxValue,
                                     charIndex: characterIndex);
                         }
-                        
+
                         if (book.Blueprint.IsArcanist) {
                             for (int level = 1; level <= book.LastSpellbookLevel; level++) {
                                 Main.Verbose($"    Looking at arcanist level {level}", "state");
@@ -131,15 +130,15 @@ namespace BuffIt2TheLimit {
                                         charIndex: characterIndex);
                             }
                         }
+                    } catch (Exception ex) {
+                        Main.Error(ex, $"scanning spellbook {book.Blueprint.DisplayName} for {dude.CharacterName}");
                     }
                 }
-            } catch (Exception ex) {
-                Main.Error(ex, "finding spells");
             }
 
-            try {
-                for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
-                    UnitEntityData dude = Group[characterIndex];
+            for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
+                UnitEntityData dude = Group[characterIndex];
+                try {
                     foreach (Ability ability in dude.Abilities.RawFacts) {
                         ItemEntity sourceItem = ability.SourceItem;
                         if (sourceItem != null) {
@@ -181,9 +180,9 @@ namespace BuffIt2TheLimit {
                                     sourceItem: sourceItem);
                         }
                     }
+                } catch (Exception ex) {
+                    Main.Error(ex, $"scanning abilities for {dude.CharacterName}");
                 }
-            } catch (Exception ex) {
-                Main.Error(ex, "finding abilities:");
             }
 
             try {
