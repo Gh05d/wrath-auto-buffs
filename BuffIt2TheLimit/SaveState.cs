@@ -102,6 +102,8 @@ namespace BuffIt2TheLimit {
         public bool UseEquipment = true;
         [JsonProperty]
         public bool UseExtendRod;
+        [JsonProperty]
+        public bool CastOnCombatStart;
     }
 
 

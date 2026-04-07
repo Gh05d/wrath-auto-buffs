@@ -110,5 +110,7 @@
   "reserve.toggle": "Reserve anzeigen",
   "reserve.toggle.hide": "Reserve ausblenden",
   "reserve.toggle.tooltip": "Alle rekrutierten Begleiter anzeigen, auch wenn sie nicht in der aktiven Gruppe sind",
-  "reserve.portrait.tooltip": "Nicht in aktiver Gruppe"
+  "reserve.portrait.tooltip": "Nicht in aktiver Gruppe",
+  "use.combatstart": "Cast on combat start",
+  "use.combatstart.tooltip": "Automatically cast this buff when combat begins"
 }

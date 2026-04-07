@@ -164,6 +164,7 @@ namespace BuffIt2TheLimit {
         public bool UsePotions = true;
         public bool UseEquipment = true;
         public bool UseExtendRod;
+        public bool CastOnCombatStart;
         public bool IsSong;
         public Kingmaker.UnitLogic.ActivatableAbilities.ActivatableAbility ActivatableSource;
 
@@ -228,6 +229,7 @@ namespace BuffIt2TheLimit {
             UsePotions = state.UsePotions;
             UseEquipment = state.UseEquipment;
             UseExtendRod = state.UseExtendRod;
+            CastOnCombatStart = state.CastOnCombatStart;
             SetHidden(HideReason.Blacklisted, state.Blacklisted);
             foreach (var caster in CasterQueue) {
                 if (state.Casters.TryGetValue(caster.Key, out var casterState)) {

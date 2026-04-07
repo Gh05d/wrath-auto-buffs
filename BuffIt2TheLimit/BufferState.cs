@@ -495,6 +495,7 @@ namespace BuffIt2TheLimit {
                 save.UsePotions = buff.UsePotions;
                 save.UseEquipment = buff.UseEquipment;
                 save.UseExtendRod = buff.UseExtendRod;
+                save.CastOnCombatStart = buff.CastOnCombatStart;
             }
 
 

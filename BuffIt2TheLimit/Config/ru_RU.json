@@ -74,5 +74,7 @@
   "reserve.toggle": "Show Reserve",
   "reserve.toggle.hide": "Hide Reserve",
   "reserve.toggle.tooltip": "Show all recruited companions, including those not in the active party",
-  "reserve.portrait.tooltip": "Not in active party"
+  "reserve.portrait.tooltip": "Not in active party",
+  "use.combatstart": "Cast on combat start",
+  "use.combatstart.tooltip": "Automatically cast this buff when combat begins"
 }
