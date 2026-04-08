@@ -1647,56 +1647,53 @@ namespace BuffIt2TheLimit {
             // Round Limit spinner — on left side, below combat start toggle
             var (roundLimitObj, roundLimitRect) = UIHelpers.Create("RoundLimitSpinner", prioSideObj.transform);
             var roundLimitLE = roundLimitObj.AddComponent<LayoutElement>();
-            roundLimitLE.preferredHeight = 28;
+            roundLimitLE.preferredHeight = 32;
             roundLimitLE.flexibleWidth = 1;
 
             var roundLimitHLG = roundLimitObj.AddComponent<HorizontalLayoutGroup>();
-            roundLimitHLG.spacing = 4;
-            roundLimitHLG.childControlWidth = true;
-            roundLimitHLG.childControlHeight = true;
+            roundLimitHLG.spacing = 6;
+            roundLimitHLG.childControlWidth = false;
+            roundLimitHLG.childControlHeight = false;
             roundLimitHLG.childForceExpandWidth = false;
             roundLimitHLG.childForceExpandHeight = false;
             roundLimitHLG.childAlignment = TextAnchor.MiddleLeft;
 
             // Label
-            var (roundLimitLabelObj, _) = UIHelpers.Create("Label", roundLimitObj.transform);
-            var roundLimitLabelLE = roundLimitLabelObj.AddComponent<LayoutElement>();
-            roundLimitLabelLE.preferredWidth = 110;
+            var (roundLimitLabelObj, roundLimitLabelRect) = UIHelpers.Create("Label", roundLimitObj.transform);
+            roundLimitLabelRect.sizeDelta = new Vector2(130, 32);
             var roundLimitLabel = roundLimitLabelObj.AddComponent<TextMeshProUGUI>();
             roundLimitLabel.text = "deactivate.after.rounds".i8();
-            roundLimitLabel.fontSize = 13;
+            roundLimitLabel.fontSize = 16;
             roundLimitLabel.color = new Color(0.2f, 0.15f, 0.1f, 1f);
-            roundLimitLabel.alignment = TextAlignmentOptions.Left;
+            roundLimitLabel.alignment = TextAlignmentOptions.MidlineLeft;
             roundLimitLabel.enableWordWrapping = false;
 
             // Minus button
+            float spinnerBtnScale = 0.7f;
             var roundLimitMinus = GameObject.Instantiate(expandButtonPrefab, roundLimitObj.transform);
             roundLimitMinus.SetActive(true);
-            roundLimitMinus.Rect().localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            roundLimitMinus.Rect().localScale = new Vector3(spinnerBtnScale, spinnerBtnScale, spinnerBtnScale);
+            roundLimitMinus.Rect().pivot = new Vector2(0.5f, 0.5f);
             roundLimitMinus.Rect().SetRotate2D(90);
-            var roundLimitMinusLE = roundLimitMinus.AddComponent<LayoutElement>();
-            roundLimitMinusLE.preferredWidth = 20;
-            roundLimitMinusLE.preferredHeight = 20;
+            roundLimitMinus.Rect().sizeDelta = new Vector2(30, 30);
             var roundLimitMinusBtn = roundLimitMinus.GetComponent<OwlcatButton>();
 
             // Value display
-            var (roundLimitValueObj, _) = UIHelpers.Create("Value", roundLimitObj.transform);
-            var roundLimitValueLE = roundLimitValueObj.AddComponent<LayoutElement>();
-            roundLimitValueLE.preferredWidth = 30;
+            var (roundLimitValueObj, roundLimitValueRect) = UIHelpers.Create("Value", roundLimitObj.transform);
+            roundLimitValueRect.sizeDelta = new Vector2(36, 32);
             var roundLimitValueText = roundLimitValueObj.AddComponent<TextMeshProUGUI>();
             roundLimitValueText.text = "\u221E";
-            roundLimitValueText.fontSize = 16;
+            roundLimitValueText.fontSize = 20;
             roundLimitValueText.color = new Color(0.2f, 0.15f, 0.1f, 1f);
             roundLimitValueText.alignment = TextAlignmentOptions.Center;
 
             // Plus button
             var roundLimitPlus = GameObject.Instantiate(expandButtonPrefab, roundLimitObj.transform);
             roundLimitPlus.SetActive(true);
-            roundLimitPlus.Rect().localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            roundLimitPlus.Rect().localScale = new Vector3(spinnerBtnScale, spinnerBtnScale, spinnerBtnScale);
+            roundLimitPlus.Rect().pivot = new Vector2(0.5f, 0.5f);
             roundLimitPlus.Rect().SetRotate2D(-90);
-            var roundLimitPlusLE = roundLimitPlus.AddComponent<LayoutElement>();
-            roundLimitPlusLE.preferredWidth = 20;
-            roundLimitPlusLE.preferredHeight = 20;
+            roundLimitPlus.Rect().sizeDelta = new Vector2(30, 30);
             var roundLimitPlusBtn = roundLimitPlus.GetComponent<OwlcatButton>();
 
             roundLimitMinusBtn.OnLeftClick.AddListener(() => {
