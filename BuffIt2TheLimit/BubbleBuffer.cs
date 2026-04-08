@@ -3612,7 +3612,7 @@ namespace BuffIt2TheLimit {
 
         public void TrackActivation(BlueprintGuid guid) {
             float gameTime = (float)Game.Instance.Player.GameTime.TotalSeconds;
-            Main.Log($"[RoundLimit] TrackActivation: guid={guid}, gameTime={gameTime:F1}s");
+            Main.Verbose($"[RoundLimit] TrackActivation: guid={guid}, gameTime={gameTime:F1}s");
             activationTimes[guid] = gameTime;
         }
 

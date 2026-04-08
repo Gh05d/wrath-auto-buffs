@@ -465,7 +465,6 @@ namespace BuffIt2TheLimit {
                     activatable.IsOn = true;
                     if (!activatable.IsStarted)
                         activatable.TryStart();
-                    Main.Log($"  Song {songBuff.Name}: IsOn={activatable.IsOn}, IsStarted={activatable.IsStarted}");
                     activatedGroups.Add(groupKey);
                     songsActivated++;
                     if (songBuff.DeactivateAfterRounds > 0)
