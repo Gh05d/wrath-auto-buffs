@@ -49,6 +49,8 @@ using Kingmaker.UI.MVVM._PCView.Modificators;
 using Kingmaker.Dungeon.Actions;
 using Kingmaker.Dungeon;
 using Kingmaker.UnitLogic.Parts;
+using Kingmaker.Blueprints;
+using Kingmaker.RuleSystem.Rules;
 
 namespace BuffIt2TheLimit {
 
@@ -2678,6 +2680,7 @@ namespace BuffIt2TheLimit {
         private static ServiceWindowWatcher UiEventSubscriber;
         private static SpellbookWatcher SpellMemorizeHandler;
         private static HideBubbleButtonsWatcher ButtonHiderHandler;
+        internal static RoundLimitHandler RoundLimitWatcher;
 
         public static void Install() {
 
@@ -2685,10 +2688,12 @@ namespace BuffIt2TheLimit {
             UiEventSubscriber = new();
             SpellMemorizeHandler = new();
             ButtonHiderHandler = new();
+            RoundLimitWatcher = new();
             EventBus.Subscribe(Instance);
             EventBus.Subscribe(UiEventSubscriber);
             EventBus.Subscribe(SpellMemorizeHandler);
             EventBus.Subscribe(ButtonHiderHandler);
+            EventBus.Subscribe(RoundLimitWatcher);
 
         }
 
@@ -2702,6 +2707,7 @@ namespace BuffIt2TheLimit {
             EventBus.Unsubscribe(UiEventSubscriber);
             EventBus.Unsubscribe(SpellMemorizeHandler);
             EventBus.Unsubscribe(ButtonHiderHandler);
+            EventBus.Unsubscribe(RoundLimitWatcher);
         }
     }
 
@@ -3526,6 +3532,60 @@ namespace BuffIt2TheLimit {
                 }
             }
         }
+    }
+
+    internal class RoundLimitHandler : ITurnBasedModeHandler, IPartyCombatHandler {
+        private int currentRound;
+        private readonly Dictionary<BlueprintGuid, int> activationRounds = new();
+
+        public void TrackActivation(BlueprintGuid guid) {
+            activationRounds[guid] = currentRound;
+        }
+
+        public void HandleRoundStarted(int round) {
+            currentRound = round;
+            if (activationRounds.Count == 0) return;
+
+            var controller = GlobalBubbleBuffer.Instance?.SpellbookController;
+            if (controller?.state?.BuffList == null) return;
+
+            var toRemove = new List<BlueprintGuid>();
+            foreach (var kvp in activationRounds) {
+                var guid = kvp.Key;
+                var activatedAt = kvp.Value;
+
+                var buff = controller.state.BuffList.FirstOrDefault(b =>
+                    b.IsSong && b.ActivatableSource?.Blueprint.AssetGuid == guid);
+
+                if (buff == null || buff.ActivatableSource == null) {
+                    toRemove.Add(guid);
+                    continue;
+                }
+
+                if (buff.DeactivateAfterRounds > 0 && round - activatedAt >= buff.DeactivateAfterRounds) {
+                    Main.Log($"Round limit reached for {buff.Name}: {round - activatedAt} rounds (limit={buff.DeactivateAfterRounds}), deactivating");
+                    buff.ActivatableSource.IsOn = false;
+                    toRemove.Add(guid);
+                }
+            }
+
+            foreach (var guid in toRemove) {
+                activationRounds.Remove(guid);
+            }
+        }
+
+        public void HandlePartyCombatStateChanged(bool inCombat) {
+            if (!inCombat) {
+                activationRounds.Clear();
+                currentRound = 0;
+            }
+        }
+
+        // ITurnBasedModeHandler — unused methods
+        public void HandleSurpriseRoundStarted() { }
+        public void HandleTurnStarted(UnitEntityData unit) { }
+        public void HandleUnitControlChanged(UnitEntityData unit) { }
+        public void HandleUnitNotSurprised(UnitEntityData unit, RuleSkillCheck check) { }
     }
 
     static class BubbleBlueprints {
