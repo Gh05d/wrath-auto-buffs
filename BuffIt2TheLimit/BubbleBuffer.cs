@@ -3611,21 +3611,20 @@ namespace BuffIt2TheLimit {
         private readonly Dictionary<BlueprintGuid, float> activationTimes = new();
 
         public void TrackActivation(BlueprintGuid guid) {
-            float elapsed = Game.Instance.TurnBasedCombatController?.TimeSinceStart ?? 0f;
-            Main.Log($"[RoundLimit] TrackActivation: guid={guid}, elapsed={elapsed:F1}s");
-            activationTimes[guid] = elapsed;
+            float gameTime = (float)Game.Instance.Player.GameTime.TotalSeconds;
+            Main.Log($"[RoundLimit] TrackActivation: guid={guid}, gameTime={gameTime:F1}s");
+            activationTimes[guid] = gameTime;
         }
 
         /// <summary>
-        /// Called from Harmony postfix on CombatController.TickTime().
-        /// Checks elapsed game time against round limits. Works in RTWP and Turn-Based.
+        /// Called every frame from BubbleBuffGlobalController.Update().
+        /// Uses game time to track elapsed rounds.
         /// </summary>
-        public void OnTick() {
+        public void Tick() {
             if (activationTimes.Count == 0) return;
+            if (!Game.Instance.Player.IsInCombat) return;
 
-            var combat = Game.Instance.TurnBasedCombatController;
-            if (combat == null) return;
-            float elapsed = combat.TimeSinceStart;
+            float gameTime = (float)Game.Instance.Player.GameTime.TotalSeconds;
 
             var controller = GlobalBubbleBuffer.Instance?.SpellbookController;
             if (controller?.state?.BuffList == null) return;
@@ -3634,7 +3633,7 @@ namespace BuffIt2TheLimit {
             foreach (var kvp in activationTimes) {
                 var guid = kvp.Key;
                 var activatedAt = kvp.Value;
-                float timePassed = elapsed - activatedAt;
+                float timePassed = gameTime - activatedAt;
 
                 var buff = controller.state.BuffList.FirstOrDefault(b =>
                     b.IsSong && b.ActivatableSource?.Blueprint.AssetGuid == guid);
@@ -3660,31 +3659,6 @@ namespace BuffIt2TheLimit {
         public void HandlePartyCombatStateChanged(bool inCombat) {
             if (!inCombat) {
                 activationTimes.Clear();
-            }
-        }
-    }
-
-    static class RoundLimitPatcher {
-        public static void Apply(HarmonyLib.Harmony harmony) {
-            try {
-                var targetMethod = AccessTools.Method(typeof(TurnBased.Controllers.CombatController), "TickTime");
-                if (targetMethod == null) {
-                    Main.Log("[RoundLimit] ERROR: Could not find CombatController.TickTime via AccessTools");
-                    return;
-                }
-                var postfix = new HarmonyMethod(AccessTools.Method(typeof(RoundLimitPatcher), nameof(TickTimePostfix)));
-                harmony.Patch(targetMethod, postfix: postfix);
-                Main.Log("[RoundLimit] Successfully patched CombatController.TickTime");
-            } catch (Exception ex) {
-                Main.Error(ex, "RoundLimit: patching TickTime");
-            }
-        }
-
-        static void TickTimePostfix() {
-            try {
-                GlobalBubbleBuffer.RoundLimitWatcher?.OnTick();
-            } catch (Exception ex) {
-                Main.Error(ex, "RoundLimit: TickTime postfix");
             }
         }
     }

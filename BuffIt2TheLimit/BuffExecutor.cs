@@ -56,6 +56,9 @@ namespace BuffIt2TheLimit {
         }
 
         private void Update() {
+            // Round limit deactivation check
+            GlobalBubbleBuffer.RoundLimitWatcher?.Tick();
+
             // Handle pending open-buff-mode from the quick open button.
             // Two-phase approach: Phase 0 waits for spellbook ready, Phase 1 monitors PartyView.
             // The game's spellbook animation can re-show PartyView after our HideAnimation call,
@@ -195,6 +198,8 @@ namespace BuffIt2TheLimit {
 
                     Main.Verbose($"Activating song: {songBuff.Name} on {caster.CharacterName}");
                     activatable.IsOn = true;
+                    if (!activatable.IsStarted)
+                        activatable.TryStart();
                     activatedGroups.Add(groupKey);
                     if (songBuff.DeactivateAfterRounds > 0)
                         GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
@@ -458,6 +463,9 @@ namespace BuffIt2TheLimit {
 
                     Main.Log($"  Song {songBuff.Name}: activating on {caster.CharacterName}");
                     activatable.IsOn = true;
+                    if (!activatable.IsStarted)
+                        activatable.TryStart();
+                    Main.Log($"  Song {songBuff.Name}: IsOn={activatable.IsOn}, IsStarted={activatable.IsStarted}");
                     activatedGroups.Add(groupKey);
                     songsActivated++;
                     if (songBuff.DeactivateAfterRounds > 0)
