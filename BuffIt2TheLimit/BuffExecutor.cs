@@ -196,6 +196,8 @@ namespace BuffIt2TheLimit {
                     Main.Verbose($"Activating song: {songBuff.Name} on {caster.CharacterName}");
                     activatable.IsOn = true;
                     activatedGroups.Add(groupKey);
+                    if (songBuff.DeactivateAfterRounds > 0)
+                        GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
                 } catch (Exception ex) {
                     Main.Error(ex, $"activating song {songBuff.Name}");
                 }
@@ -458,6 +460,8 @@ namespace BuffIt2TheLimit {
                     activatable.IsOn = true;
                     activatedGroups.Add(groupKey);
                     songsActivated++;
+                    if (songBuff.DeactivateAfterRounds > 0)
+                        GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
                 } catch (Exception ex) {
                     Main.Error(ex, $"combat start: activating song {songBuff.Name}");
                 }
