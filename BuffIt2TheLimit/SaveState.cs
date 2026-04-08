@@ -104,6 +104,8 @@ namespace BuffIt2TheLimit {
         public bool UseExtendRod;
         [JsonProperty]
         public bool CastOnCombatStart;
+        [JsonProperty]
+        public int DeactivateAfterRounds;
     }
 
 

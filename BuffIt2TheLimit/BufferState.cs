@@ -377,6 +377,18 @@ namespace BuffIt2TheLimit {
             //Main.Log("Sorting buffs");
             BuffList = list;
 
+            // Category summary — always logged to diagnose disappearing tabs
+            int cBuff = 0, cAbility = 0, cEquip = 0, cSong = 0;
+            foreach (var b in list) {
+                switch (b.Category) {
+                    case Category.Buff: cBuff++; break;
+                    case Category.Ability: cAbility++; break;
+                    case Category.Equipment: cEquip++; break;
+                    case Category.Song: cSong++; break;
+                }
+            }
+            Main.Log($"Scan complete: {list.Count} buffs (Buff={cBuff}, Ability={cAbility}, Equipment={cEquip}, Song={cSong})");
+
             foreach (var buff in BuffList) {
                 if (SavedState.Buffs.TryGetValue(buff.Key, out var fromSave)) {
                     buff.InitialiseFromSave(fromSave);
@@ -496,6 +508,7 @@ namespace BuffIt2TheLimit {
                 save.UseEquipment = buff.UseEquipment;
                 save.UseExtendRod = buff.UseExtendRod;
                 save.CastOnCombatStart = buff.CastOnCombatStart;
+                save.DeactivateAfterRounds = buff.DeactivateAfterRounds;
             }
 
 
