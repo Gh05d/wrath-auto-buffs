@@ -783,6 +783,16 @@ namespace BuffIt2TheLimit {
                 });
             }
 
+            {
+                var (toggle, _) = MakeSettingsToggle(togglePrefab, panel.transform, "setting-activatables-enabled".i8());
+                toggle.isOn = state.SavedState.ActivatablesEnabled;
+                toggle.onValueChanged.AddListener(enabled => {
+                    state.SavedState.ActivatablesEnabled = enabled;
+                    state.InputDirty = true;
+                    state.Save(true);
+                });
+            }
+
             // UMD Retries (label + buttons)
             {
                 var labelObj = GameObject.Instantiate(togglePrefab, panel.transform);
