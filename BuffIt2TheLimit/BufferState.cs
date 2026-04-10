@@ -662,15 +662,20 @@ namespace BuffIt2TheLimit {
                 buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex, sourceType, sourceItem);
             } else {
                 if (!SpellsWithBeneficialBuffs.TryGetValue(spell.Blueprint.AssetGuid.m_Guid, out var abilityEffect)) {
-                    var beneficial = spell.Blueprint.GetBeneficialBuffs();
+                    var beneficial = spell.Blueprint.GetBeneficialBuffs(skipDamageFilter: category == Category.Ability);
                     abilityEffect = new AbilityCombinedEffects(beneficial);
                     SpellsWithBeneficialBuffs[spell.Blueprint.AssetGuid.m_Guid] = abilityEffect;
                     SpellNames[spell.Blueprint.AssetGuid.m_Guid] = spell.Name;
                 }
 
                 if (abilityEffect.Empty) {
-                    Main.Verbose($"Rejecting {spell.Name} because it has no applied effects", "rejection");
-                    return;
+                    // Fallback for self-target abilities (e.g. Dimension Strike) that have no detectable buff effects
+                    if (category == Category.Ability && spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner) {
+                        Main.Verbose($"Allowing self-target ability {spell.Name} despite no detected effects", "state");
+                    } else {
+                        Main.Verbose($"Rejecting {spell.Name} because it has no applied effects", "rejection");
+                        return;
+                    }
                 }
 
 
