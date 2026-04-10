@@ -3637,7 +3637,7 @@ namespace BuffIt2TheLimit {
                 float timePassed = gameTime - activatedAt;
 
                 var buff = controller.state.BuffList.FirstOrDefault(b =>
-                    b.IsSong && b.ActivatableSource?.Blueprint.AssetGuid == guid);
+                    b.IsActivatable && b.ActivatableSource?.Blueprint.AssetGuid == guid);
 
                 if (buff == null || buff.ActivatableSource == null) {
                     toRemove.Add(guid);
