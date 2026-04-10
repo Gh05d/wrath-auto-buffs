@@ -157,7 +157,8 @@ namespace BuffIt2TheLimit {
                                     creditClamp: int.MaxValue,
                                     charIndex: characterIndex,
                                     archmageArmor: false,
-                                    category: Category.Ability);
+                                    category: Category.Ability,
+                                    sourceItem: sourceItem);
                         } else if (SavedState.EquipmentEnabled
                                    && !(sourceItem.Blueprint is BlueprintItemEquipmentUsable)) {
                             // Equipped item abilities (staves, etc.) — not quickslot items
