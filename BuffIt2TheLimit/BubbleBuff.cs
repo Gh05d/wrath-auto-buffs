@@ -145,12 +145,13 @@ namespace BuffIt2TheLimit {
         public BubbleBuff(Kingmaker.UnitLogic.ActivatableAbilities.ActivatableAbility activatable) {
             this.ActivatableSource = activatable;
             this.Spell = null;
-            this.IsSong = true;
+            this.IsActivatable = true;
             var blueprint = activatable.Blueprint;
             this.NameLower = blueprint.Name.ToLower();
             this.Key = new BuffKey(blueprint.AssetGuid);
             this.Category = Category.Song;
             this.BuffsApplied = new AbilityCombinedEffects(Enumerable.Empty<IBeneficialEffect>());
+            this.ActivatableGroup = blueprint.Group;
         }
 
         public Action OnUpdate = null;
@@ -166,8 +167,10 @@ namespace BuffIt2TheLimit {
         public bool UseExtendRod;
         public bool CastOnCombatStart;
         public int DeactivateAfterRounds;
-        public bool IsSong;
+        public bool IsActivatable;
+        public bool IsSong => IsActivatable && Category == Category.Song;
         public Kingmaker.UnitLogic.ActivatableAbilities.ActivatableAbility ActivatableSource;
+        public Kingmaker.UnitLogic.ActivatableAbilities.ActivatableAbilityGroup ActivatableGroup;
 
         public void AddProvider(UnitEntityData provider, Spellbook book, AbilityData spell, AbilityData baseSpell, IReactiveProperty<int> credits, bool newCredit, int creditClamp, int u, BuffSourceType sourceType = BuffSourceType.Spell, Kingmaker.Items.ItemEntity sourceItem = null) {
             if (this.book == null) {
@@ -597,6 +600,7 @@ namespace BuffIt2TheLimit {
 
         public bool SelfCastOnly =>
             SourceType == BuffSourceType.Song ||
+            SourceType == BuffSourceType.Activatable ||
             SourceType == BuffSourceType.Potion ||
             spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner;
 

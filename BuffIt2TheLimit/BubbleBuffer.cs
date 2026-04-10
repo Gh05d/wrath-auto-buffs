@@ -2832,7 +2832,8 @@ namespace BuffIt2TheLimit {
         Scroll,
         Potion,
         Equipment,
-        Song
+        Song,
+        Activatable
     }
 
     public enum UmdMode {
