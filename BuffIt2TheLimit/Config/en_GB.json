@@ -58,9 +58,9 @@
   "add-all": "Add to all",
 
   "settings": "Settings",
-  "settings-toggle": "Toggle the BubbleBuffs settings panel",
+  "settings-toggle": "Toggle the Buff It 2 The Limit settings panel",
   "setting-verbose": "Use full animation casting",
-  "setting-in-combat": "Allow bubble-buffing in combat",
+  "setting-in-combat": "Allow buffing in combat",
   "setting-overwritebuff": "Ignore existing buffs",
   "setting-scrolls-enabled": "Enable scroll usage",
   "setting-potions-enabled": "Enable potion usage",
@@ -96,7 +96,7 @@
   "log.no-scroll-available": "No scroll of {0} in inventory",
   "log.no-potion-available": "No potion of {0} in inventory",
   "openbuffs.tooltip.header": "Open Buff Menu",
-  "openbuffs.tooltip.desc": "Directly open the BubbleBuffs configuration menu",
+  "openbuffs.tooltip.desc": "Directly open the Buff It 2 The Limit configuration menu",
 
   "shortcut.long": "Normal shortcut:",
   "shortcut.quick": "Quick shortcut:",

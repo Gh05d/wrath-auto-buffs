@@ -2290,7 +2290,7 @@ namespace BuffIt2TheLimit {
         }
 
         public override IEnumerable<ITooltipBrick> GetHeader(TooltipTemplateType type) {
-            yield return new TooltipBrickEntityHeader($"BubbleBuff {"tooltip.results".i8()}", null);
+            yield return new TooltipBrickEntityHeader("tooltip.results".i8(), null);
             yield break;
         }
         public override IEnumerable<ITooltipBrick> GetBody(TooltipTemplateType type) {

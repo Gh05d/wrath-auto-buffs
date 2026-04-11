@@ -1,6 +1,6 @@
 {
     "AssemblyName": "BuffIt2TheLimit.dll",
-    "Author": "bubbles",
+    "Author": "Gh05d",
     "DisplayName": "Buff It 2 The Limit",
     "EntryMethod": "BuffIt2TheLimit.Main.Load",
     "GameVersion": "1.4.0",
