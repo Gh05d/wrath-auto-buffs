@@ -357,9 +357,12 @@ namespace BuffIt2TheLimit {
                         var srcItem = activatable.SourceItem;
 
                         if (srcItem != null) {
-                            // Item-backed activatable (metamagic rods, quivers, etc.) — goes to Equipment tab
                             if (!SavedState.EquipmentEnabled) continue;
                             if (srcItem.Charges <= 0) continue;
+                            if (blueprint.Buff == null) {
+                                Main.Verbose($"        SKIP equipment activatable (no buff): {blueprint.Name} from {srcItem.Name}", "rejection");
+                                continue;
+                            }
                             Main.Verbose($"      Adding equipment activatable: {blueprint.Name} from {srcItem.Name} for {dude.CharacterName}", "state");
                             AddActivatable(dude, activatable, characterIndex, Category.Equipment, srcItem);
                             continue;

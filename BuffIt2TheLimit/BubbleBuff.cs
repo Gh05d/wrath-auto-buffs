@@ -602,9 +602,13 @@ namespace BuffIt2TheLimit {
             SourceType == BuffSourceType.Song ||
             SourceType == BuffSourceType.Activatable ||
             SourceType == BuffSourceType.Potion ||
+            spell == null ||
             spell.TargetAnchor == Kingmaker.UnitLogic.Abilities.Blueprints.AbilityTargetAnchor.Owner;
 
         public bool CanTarget(string targetId) {
+            if (spell == null)
+                return targetId == who.UniqueId;
+
             if (SourceType == BuffSourceType.Song || SourceType == BuffSourceType.Activatable)
                 return targetId == who.UniqueId; // Activatable abilities target the caster only
 
