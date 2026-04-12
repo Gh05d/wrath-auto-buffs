@@ -133,6 +133,11 @@ BuffExecutor.Execute(BuffGroup)  →  iterates matching buffs
 EngineCastingHandler  →  handles the actual spell casting via game's ability system
     → applies Powerful Change, Share Transmutation, Reservoir CL buffs
     → manages spell slot consumption and item charges
+
+BuffExecutor.ExecuteCombatStart()  →  triggered by EventBus on combat enter
+    → activates activatables (songs, judgments) directly via IsOn/TryStart
+    → casts spell-based buffs via AnimatedExecutionEngine or InstantExecutionEngine
+    → engine choice controlled by SkipAnimationsOnCombatStart setting
 ```
 
 ### Key Classes
@@ -148,10 +153,12 @@ EngineCastingHandler  →  handles the actual spell casting via game's ability s
 | `SavedBufferState` / `SavedBuffState` | `SaveState.cs` | JSON-serialized per-save configuration |
 | `ShortcutBinding` | `ShortcutBinding.cs` | Readonly struct for keyboard shortcuts with modifier keys (Ctrl/Shift/Alt) + backward-compatible JSON converter |
 | `BubbleBuffGlobalController` | `BuffExecutor.cs` | MonoBehaviour handling shortcut capture/execution and spell casting coroutines |
+| `AnimatedExecutionEngine` | `AnimatedExecutionEngine.cs` | Cast spells with full game animations via `UnitUseAbility` commands |
+| `InstantExecutionEngine` | `InstantExecutionEngine.cs` | Cast spells instantly via `Rulebook.Trigger` in batches of 8 |
 
 ### UI Structure
 
-`BubbleBuffer.cs` (~3000 lines) contains most UI code. Key patterns:
+`BubbleBuffer.cs` (~3700 lines) contains most UI code. Key patterns:
 
 - **HUD buttons**: Created in `TryInstallUI()` via local `AddButton()` function. Uses `ButtonSprites.Load("name", size)` which loads `Assets/icons/{name}_normal.png`, `_hover.png`, `_down.png`.
 - **Buff window**: Created by `BubbleBuffSpellbookController.CreateWindow()`. Uses `ButtonGroup<T>` for tab groups, `Portrait` class for caster portraits.
@@ -168,7 +175,7 @@ EngineCastingHandler  →  handles the actual spell casting via game's ability s
 
 ### Localization
 
-JSON files in `Config/` (en_GB, de_DE, fr_FR, ru_RU, zh_CN) are embedded resources. Access via `"key".i8()` extension method. English (`en_GB.json`) is the fallback. When adding new UI text, add keys to all locale files.
+JSON files in `Config/` (en_GB, de_DE, fr_FR, ru_RU, zh_CN) are embedded resources. Access via `"key".i8()` extension method. English (`en_GB.json`) is the fallback. When adding new UI text, add keys to `en_GB.json` and `de_DE.json` only — the other locales are incomplete and fall back to EN automatically.
 - **Locale files vary in completeness**: `en_GB` and `de_DE` have all keys. `fr_FR`, `ru_RU`, `zh_CN` are shorter and missing many keys added after the initial fork. Don't assume same line numbers or key presence across locales.
 - **Technical UI terms stay English in de_DE**: Gaming/UI terms like "shortcut", "buff group" names (Normal, Quick, Important) should not be translated into German — English reads more naturally in this context.
 
