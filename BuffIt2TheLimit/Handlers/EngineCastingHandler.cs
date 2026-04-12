@@ -145,6 +145,8 @@ namespace BuffIt2TheLimit.Handlers {
                             } else if (_castTask.SpellToCast.MetamagicData != null) {
                                 _castTask.SpellToCast.MetamagicData.Clear();
                                 _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
+                                _castTask.SpellToCast.MetamagicData.SpellLevelCost = _castTask.OriginalSpellLevelCost;
+                                _castTask.SpellToCast.MetamagicData.HeightenLevel = _castTask.OriginalHeightenLevel;
                             }
                             if (Context?.m_Params != null) {
                                 Context.m_Params.Metamagic = _castTask.OriginalMetamagicMask;
@@ -215,6 +217,8 @@ namespace BuffIt2TheLimit.Handlers {
                                 } else if (_castTask.SpellToCast.MetamagicData != null) {
                                     _castTask.SpellToCast.MetamagicData.Clear();
                                     _castTask.SpellToCast.MetamagicData.Add(_castTask.OriginalMetamagicMask);
+                                    _castTask.SpellToCast.MetamagicData.SpellLevelCost = _castTask.OriginalSpellLevelCost;
+                                    _castTask.SpellToCast.MetamagicData.HeightenLevel = _castTask.OriginalHeightenLevel;
                                 }
                             } catch (Exception ex) {
                                 Main.Verbose($"Extend leak cleanup: {ex.Message}");

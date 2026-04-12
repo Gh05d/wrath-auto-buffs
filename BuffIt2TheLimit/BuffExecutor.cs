@@ -367,6 +367,8 @@ namespace BuffIt2TheLimit {
                             SourceItem = caster.SourceItem,
                             OriginalMetamagicWasNull = spellToCast.MetamagicData == null,
                             OriginalMetamagicMask = spellToCast.MetamagicData?.MetamagicMask ?? (Metamagic)0,
+                            OriginalSpellLevelCost = spellToCast.MetamagicData?.SpellLevelCost ?? 0,
+                            OriginalHeightenLevel = spellToCast.MetamagicData?.HeightenLevel ?? 0,
                         };
 
                         // Extend Rod lookup
@@ -521,6 +523,8 @@ namespace BuffIt2TheLimit {
                             SourceItem = caster.SourceItem,
                             OriginalMetamagicWasNull = spellToCast?.MetamagicData == null,
                             OriginalMetamagicMask = spellToCast?.MetamagicData?.MetamagicMask ?? (Metamagic)0,
+                            OriginalSpellLevelCost = spellToCast?.MetamagicData?.SpellLevelCost ?? 0,
+                            OriginalHeightenLevel = spellToCast?.MetamagicData?.HeightenLevel ?? 0,
                         };
 
                         if (buff.UseExtendRod && caster.SourceType == BuffSourceType.Spell) {
@@ -583,6 +587,8 @@ namespace BuffIt2TheLimit {
         // modifies the shared SpellToCast. Used by handlers to restore/clean state.
         public bool OriginalMetamagicWasNull;
         public Metamagic OriginalMetamagicMask;
+        public int OriginalSpellLevelCost;
+        public int OriginalHeightenLevel;
 
         public Retentions Retentions {
             get {
