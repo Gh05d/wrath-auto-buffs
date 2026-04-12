@@ -680,13 +680,11 @@ namespace BuffIt2TheLimit {
             if (BuffsByKey.TryGetValue(key, out var buff)) {
                 buff.AddProvider(dude, book, spell, baseSpell, credits, newCredit, clamp, charIndex, sourceType, sourceItem);
             } else {
-                // Only relax the filter for genuine class abilities (no sourceItem).
-                // Item-backed abilities (metamagic rods, midnight bolts, etc.) belong to Equipment,
-                // not the Ability tab — they should never hit the self-target fallback.
-                bool isClassAbility = category == Category.Ability && sourceItem == null;
+                bool isAbilityCategory = category == Category.Ability;
+                bool isClassAbility = isAbilityCategory && sourceItem == null;
 
                 if (!SpellsWithBeneficialBuffs.TryGetValue(spell.Blueprint.AssetGuid.m_Guid, out var abilityEffect)) {
-                    var beneficial = spell.Blueprint.GetBeneficialBuffs(skipDamageFilter: isClassAbility);
+                    var beneficial = spell.Blueprint.GetBeneficialBuffs(skipDamageFilter: isAbilityCategory);
                     abilityEffect = new AbilityCombinedEffects(beneficial);
                     SpellsWithBeneficialBuffs[spell.Blueprint.AssetGuid.m_Guid] = abilityEffect;
                     SpellNames[spell.Blueprint.AssetGuid.m_Guid] = spell.Name;
