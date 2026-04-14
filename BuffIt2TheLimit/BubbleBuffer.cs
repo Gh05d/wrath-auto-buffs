@@ -1111,7 +1111,7 @@ namespace BuffIt2TheLimit {
         private Action UpdateDetailsView;
 
         private static BlueprintFeature PowerfulChangeFeature => Resources.GetBlueprint<BlueprintFeature>("5e01e267021bffe4e99ebee3fdc872d1");
-        private static BlueprintFeature ShareTransmutationFeature => Resources.GetBlueprint<BlueprintFeature>("c4ed8d1a90c93754eacea361653a7d56");
+        internal static BlueprintFeature ShareTransmutationFeature => Resources.GetBlueprint<BlueprintFeature>("c4ed8d1a90c93754eacea361653a7d56");
         private static BlueprintFeature AzataZippyMagicFeature => Resources.GetBlueprint<BlueprintFeature>("30b4200f897ba25419ba3a292aed4053");
 
         private void MakeDetailsView(GameObject portraitPrefab,
@@ -3366,14 +3366,22 @@ namespace BuffIt2TheLimit {
             for (int i = 0; i < buff.CasterQueue.Count; i++) {
                 var provider = buff.CasterQueue[i];
                 if (seen.Add(provider.who.UniqueId)) {
-                    bool hasNonSelfOnly = false;
+                    bool include = false;
                     for (int j = i; j < buff.CasterQueue.Count; j++) {
-                        if (buff.CasterQueue[j].who == provider.who && !buff.CasterQueue[j].SelfCastOnly) {
-                            hasNonSelfOnly = true;
+                        var p = buff.CasterQueue[j];
+                        if (p.who != provider.who) continue;
+                        if (!p.SelfCastOnly) { include = true; break; }
+                        // Personal spells are still actionable for Brownfur Transmuter casters
+                        // (Share Transmutation extends arcanist Transmutation personal spells to others)
+                        if (p.SourceType == BuffSourceType.Spell && p.spell != null
+                            && p.spell.IsArcanistSpell
+                            && p.spell.Blueprint.School == Kingmaker.Blueprints.Classes.Spells.SpellSchool.Transmutation
+                            && p.who.HasFact(BubbleBuffSpellbookController.ShareTransmutationFeature)) {
+                            include = true;
                             break;
                         }
                     }
-                    if (hasNonSelfOnly)
+                    if (include)
                         distinctCasters.Add(i);
                 }
             }

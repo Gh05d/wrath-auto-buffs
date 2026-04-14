@@ -616,16 +616,16 @@ namespace BuffIt2TheLimit {
                 return targetId == who.UniqueId;
 
             // Reserve targets: skip game's spell.CanTarget (rejects out-of-scene units)
-            // but still respect self-cast-only restrictions
+            // but still respect self-cast-only restrictions (relaxed when Share Transmutation is on)
             if (!Bubble.Group.Any(u => u.UniqueId == targetId)) {
-                return !SelfCastOnly || targetId == who.UniqueId;
+                return !SelfCastOnly || ShareTransmutation || targetId == who.UniqueId;
             }
 
             using (new ForceShareTransmutation(this)) {
                 if (!spell.CanTarget(new TargetWrapper(Bubble.GroupById[targetId])))
                     return false;
 
-                if (SelfCastOnly)
+                if (SelfCastOnly && !ShareTransmutation)
                     return targetId == who.UniqueId;
                 return true;
             }
