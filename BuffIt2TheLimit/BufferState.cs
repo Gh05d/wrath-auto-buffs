@@ -217,7 +217,10 @@ namespace BuffIt2TheLimit {
                             var sharedCredits = new ReactiveProperty<int>(totalCount);
                             for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
                                 UnitEntityData dude = Group[characterIndex];
-                                var abilityData = new AbilityData(spellBlueprint, dude);
+                                var abilityData = new AbilityData(spellBlueprint, dude) {
+                                    OverrideCasterLevel = blueprint.CasterLevel,
+                                    OverrideSpellLevel = blueprint.SpellLevel,
+                                };
                                 Main.Verbose($"      Adding potion buff: {spellBlueprint.Name} for {dude.CharacterName}", "state");
 
                                 AddBuff(dude: dude,
@@ -242,7 +245,10 @@ namespace BuffIt2TheLimit {
                                 UnitEntityData dude = Group[characterIndex];
                                 if (!CanUseItemWithUmd(dude, spellBlueprint, scrollDC)) continue;
 
-                                var abilityData = new AbilityData(spellBlueprint, dude);
+                                var abilityData = new AbilityData(spellBlueprint, dude) {
+                                    OverrideCasterLevel = blueprint.CasterLevel,
+                                    OverrideSpellLevel = blueprint.SpellLevel,
+                                };
                                 Main.Verbose($"      Adding scroll buff: {spellBlueprint.Name} for {dude.CharacterName}", "state");
 
                                 AddBuff(dude: dude,
@@ -268,7 +274,10 @@ namespace BuffIt2TheLimit {
                                 UnitEntityData dude = Group[characterIndex];
                                 if (!CanUseItemWithUmd(dude, spellBlueprint, wandDC)) continue;
 
-                                var abilityData = new AbilityData(spellBlueprint, dude);
+                                var abilityData = new AbilityData(spellBlueprint, dude) {
+                                    OverrideCasterLevel = blueprint.CasterLevel,
+                                    OverrideSpellLevel = blueprint.SpellLevel,
+                                };
                                 Main.Verbose($"      Adding wand buff: {spellBlueprint.Name} from {blueprint.Name} for {dude.CharacterName}", "state");
 
                                 AddBuff(dude: dude,
@@ -326,7 +335,10 @@ namespace BuffIt2TheLimit {
                             }
 
                             var credits = new ReactiveProperty<int>(charges);
-                            var abilityData = new AbilityData(spellBlueprint, dude);
+                            var abilityData = new AbilityData(spellBlueprint, dude) {
+                                OverrideCasterLevel = usableBp.CasterLevel,
+                                OverrideSpellLevel = usableBp.SpellLevel,
+                            };
 
                             Main.Verbose($"      Adding equipment buff: {spellBlueprint.Name} from {usableBp.Name} for {dude.CharacterName}", "state");
 
