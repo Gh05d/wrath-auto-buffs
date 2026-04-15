@@ -235,7 +235,13 @@ ZIP: BuffIt2TheLimit/bin/BuffIt2TheLimit-X.Y.Z.zip
 
 ## Schritt 9: Discord Post
 
-Generiere die fertige Discord-Nachricht zum Copy-Pasten in Owlcat's `#mod-updates`-Kanal. Nutze die **identischen** „What's New"-Bullets, die in Schritt 3 erzeugt wurden — nicht neu formulieren.
+Generiere die fertige Discord-Nachricht zum Copy-Pasten in Owlcat's `#mod-updates`-Kanal. Basis sind die „What's New"-Bullets aus Schritt 3, **aber stark gekürzt** — Discord bevorzugt kurze Scan-baren Text, nicht die ausführlichen Erklärungen der GitHub-Release-Notes.
+
+Kürzungsregel: Jeder Bullet max. eine Zeile, nur das WAS (nicht das WARUM/WIE). Entferne Erklärungen in Klammern, technische Details, Root-Cause-Begründungen.
+
+Beispiel:
+- GitHub: „Fixed combat-start auto-cast failing for mass/burst spells (Bless, Prayer, etc.) in parties that have the spell available from both a spellcaster and a wand/scroll. The cast now targets the caster directly to avoid movement interrupts at combat initialization."
+- Discord: „Fixed Bless / mass spells not auto-casting at combat start"
 
 Falls die Bullet-Liste leer wäre (z.B. nur `chore:`-Commits seit letztem Tag), verwende stattdessen den Platzhalter-Bullet `- Maintenance release`.
 
