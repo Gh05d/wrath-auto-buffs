@@ -1956,7 +1956,7 @@ namespace BuffIt2TheLimit {
                 toggleSideObj.SetActive(hasSourceControls);
                 prioLabelObj.SetActive(hasSourceControls);
                 useExtendRodObj.SetActive(hasSourceControls);
-                roundLimitObj.SetActive(buff.IsActivatable);
+                roundLimitObj.SetActive(buff.IsActivatable && buff.Category != Category.Toggle);
 
 
                 prioOverrideText.text = $"{"setting-source-priority".i8()}: {GetPriorityText(buff.SourcePriorityOverride)}";
