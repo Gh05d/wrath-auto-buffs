@@ -2506,6 +2506,7 @@ namespace BuffIt2TheLimit {
         internal static Sprite tabEquipmentIcon;
         internal static Sprite tabAbilitiesIcon;
         internal static Sprite tabSongsIcon;
+        internal static Sprite tabTogglesIcon;
 
         internal static Sprite groupNormalIcon;
         internal static Sprite groupImportantIcon;
@@ -2643,6 +2644,12 @@ namespace BuffIt2TheLimit {
                     try {
                         var bp = Resources.GetBlueprint<BlueprintActivatableAbility>("5250c10feed9f8744850fa3b4814e7c0"); // Inspire Courage
                         if (bp != null) tabSongsIcon = bp.Icon;
+                    } catch { }
+                }
+                if (tabTogglesIcon == null) {
+                    try {
+                        var bp = Resources.GetBlueprint<BlueprintActivatableAbility>("9972f33f977fc724c838e59641b2fca5"); // Power Attack
+                        if (bp != null) tabTogglesIcon = bp.Icon;
                     } catch { }
                 }
 
