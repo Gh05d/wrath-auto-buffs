@@ -423,16 +423,17 @@ namespace BuffIt2TheLimit {
             BuffList = list;
 
             // Category summary — always logged to diagnose disappearing tabs
-            int cBuff = 0, cAbility = 0, cEquip = 0, cSong = 0;
+            int cBuff = 0, cAbility = 0, cEquip = 0, cSong = 0, cToggle = 0;
             foreach (var b in list) {
                 switch (b.Category) {
                     case Category.Buff: cBuff++; break;
                     case Category.Ability: cAbility++; break;
                     case Category.Equipment: cEquip++; break;
                     case Category.Song: cSong++; break;
+                    case Category.Toggle: cToggle++; break;
                 }
             }
-            Main.Log($"Scan complete: {list.Count} buffs (Buff={cBuff}, Ability={cAbility}, Equipment={cEquip}, Song={cSong})");
+            Main.Log($"Scan complete: {list.Count} buffs (Buff={cBuff}, Ability={cAbility}, Equipment={cEquip}, Song={cSong}, Toggle={cToggle})");
 
             foreach (var buff in BuffList) {
                 if (SavedState.Buffs.TryGetValue(buff.Key, out var fromSave)) {
