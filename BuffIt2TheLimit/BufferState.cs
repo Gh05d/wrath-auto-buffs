@@ -399,6 +399,10 @@ namespace BuffIt2TheLimit {
                             if (!SavedState.ActivatablesEnabled) continue;
                             Main.Verbose($"      Adding activatable: {blueprint.Name} (group={blueprint.Group}) for {dude.CharacterName}", "state");
                             AddActivatable(dude, activatable, characterIndex, Category.Ability);
+                        } else {
+                            if (!SavedState.TogglesEnabled) continue;
+                            Main.Verbose($"      Adding toggle: {blueprint.Name} (group={blueprint.Group}) for {dude.CharacterName}", "state");
+                            AddActivatable(dude, activatable, characterIndex, Category.Toggle);
                         }
                     }
                 }
