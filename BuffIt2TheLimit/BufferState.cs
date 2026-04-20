@@ -403,7 +403,10 @@ namespace BuffIt2TheLimit {
 
                         if (srcItem != null) {
                             if (!SavedState.EquipmentEnabled) continue;
-                            if (srcItem.Charges <= 0) continue;
+                            // Only gate on charges for items that actually consume them. Permanent-toggle equipment
+                            // like Crimson Banner has SpendCharges=false with a nominal Charges=1 that the engine
+                            // may not initialise on the live ItemEntity — previously skipped as "charges<=0".
+                            if (srcItem.Charges <= 0 && (srcItem.Blueprint as BlueprintItemEquipmentUsable)?.SpendCharges != false) continue;
                             if (blueprint.Buff == null) {
                                 Main.Verbose($"        SKIP equipment activatable (no buff): {blueprint.Name} from {srcItem.Name}", "rejection");
                                 continue;
