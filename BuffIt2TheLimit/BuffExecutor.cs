@@ -214,9 +214,16 @@ namespace BuffIt2TheLimit {
 
             State.Recalculate(false, buffGroup);
 
-            // Phase 0: Activate activatable abilities before casting buffs
+            // Phase 0: Activate activatable abilities before casting buffs.
+            // Variant-parent activatables (ConversionsProvider != null, e.g. Shifter's Fury) must run
+            // LAST within this phase: their real activation target (ShiftersFuryPart.AppliedFacts) only
+            // materialises after a form-change activatable like Chimera Aspect has populated natural
+            // weapons on the unit. OrderBy is stable, so non-variant entries keep their reverse order.
             var activatedGroups = new HashSet<(ActivatableAbilityGroup, string)>();
-            foreach (var actBuff in State.BuffList.Where(b => b.IsActivatable && b.InGroups.Contains(buffGroup) && b.Fulfilled > 0).Reverse()) {
+            foreach (var actBuff in State.BuffList
+                .Where(b => b.IsActivatable && b.InGroups.Contains(buffGroup) && b.Fulfilled > 0)
+                .Reverse()
+                .OrderBy(b => b.ActivatableSource?.ConversionsProvider != null ? 1 : 0)) {
                 try {
                     var activatable = actBuff.ActivatableSource;
                     if (activatable == null) {
@@ -535,7 +542,10 @@ namespace BuffIt2TheLimit {
             // Phase 0: Activate activatable abilities marked for combat start
             var activatedGroups = new HashSet<(ActivatableAbilityGroup, string)>();
             int activatablesActivated = 0;
-            foreach (var actBuff in combatStartBuffs.Where(b => b.IsActivatable && b.Fulfilled > 0).Reverse()) {
+            foreach (var actBuff in combatStartBuffs
+                .Where(b => b.IsActivatable && b.Fulfilled > 0)
+                .Reverse()
+                .OrderBy(b => b.ActivatableSource?.ConversionsProvider != null ? 1 : 0)) {
                 try {
                     var activatable = actBuff.ActivatableSource;
                     if (activatable == null) {

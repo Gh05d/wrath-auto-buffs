@@ -380,6 +380,21 @@ namespace BuffIt2TheLimit {
             try {
                 for (int characterIndex = 0; characterIndex < Group.Count; characterIndex++) {
                     UnitEntityData dude = Group[characterIndex];
+
+                    // Collect blueprint GUIDs of every ActivatableAbility that is a variant-conversion of some
+                    // ConversionsProvider parent on this unit. The engine installs those conversions into
+                    // RawFacts alongside their parent — we want to keep only the parent entry to avoid
+                    // duplicate Toggle-tab rows with the same DisplayName. Do NOT filter by IsRuntimeOnly or
+                    // HiddenInUI alone: Chimera Aspects, Greater Chimera Aspects, and similar mutual-exclusive
+                    // class features set those flags too and must remain scannable.
+                    var knownConversions = new HashSet<BlueprintGuid>();
+                    foreach (var candidate in dude.ActivatableAbilities.RawFacts) {
+                        if (candidate.ConversionsProvider == null) continue;
+                        foreach (var conv in candidate.GetConversions()) {
+                            if (conv?.Blueprint != null) knownConversions.Add(conv.Blueprint.AssetGuid);
+                        }
+                    }
+
                     foreach (var activatable in dude.ActivatableAbilities.RawFacts) {
                         var blueprint = activatable.Blueprint;
                         var srcItem = activatable.SourceItem;
@@ -393,11 +408,10 @@ namespace BuffIt2TheLimit {
                             continue;
                         }
 
-                        // Runtime/hidden conversions (e.g. ShiftersFury per-weapon variants) also appear in
-                        // RawFacts. They share the parent's DisplayName so would double up in the Toggle tab.
-                        // The parent entry handles them via BuffExecutor.ResolveActivationTarget at activation.
-                        if (blueprint.IsRuntimeOnly || blueprint.HiddenInUI) {
-                            Main.Verbose($"      SKIP runtime/hidden activatable: {blueprint.Name} for {dude.CharacterName}", "rejection");
+                        // Filter variant-conversions of ConversionsProvider parents present on this unit
+                        // (e.g. ShifterFuryWeaponList per-weapon copies) to prevent duplicate entries.
+                        if (knownConversions.Contains(blueprint.AssetGuid)) {
+                            Main.Verbose($"      SKIP variant-conversion: {blueprint.Name} for {dude.CharacterName}", "rejection");
                             continue;
                         }
 
