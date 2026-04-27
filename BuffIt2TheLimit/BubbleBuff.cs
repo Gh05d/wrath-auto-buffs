@@ -419,9 +419,11 @@ namespace BuffIt2TheLimit {
             var activePartyIds = new HashSet<string>(Bubble.Group.Select(u => u.UniqueId));
 
             if (IsActivatable) {
-                if (ActivatableSource == null) return "activatable source=null";
-                if (ActivatableSource.IsOn) return "already on";
-                if (!ActivatableSource.IsAvailable) return "not available (resources/restrictions)";
+                var src = caster.ActivatableSource ?? ActivatableSource;
+                if (src == null) return "activatable source=null";
+                if (Category != Category.Song && !UnitWants(caster.who)) return $"caster '{caster.who?.CharacterName}' not in wanted set";
+                if (src.IsOn) return "already on";
+                if (!src.IsAvailable) return "not available (resources/restrictions)";
                 return "ok";
             }
 
@@ -456,30 +458,45 @@ namespace BuffIt2TheLimit {
         }
 
         public void ValidateActivatable() {
-            if (ActivatableSource == null) return;
             ActualCastQueue = new List<(string, BuffProvider)>();
-
-            if (ActivatableSource.IsOn) {
-                // Already active — mark all wanted as given
-                foreach (var target in wanted) {
-                    given.Add(target);
-                }
-                return;
-            }
-
-            if (!ActivatableSource.IsAvailable) {
-                Main.Verbose($"Activatable {Name}: not available (resources or restrictions)");
-                return;
-            }
-
             if (CasterQueue.Count == 0) return;
 
-            var caster = CasterQueue[0];
-            // Mark all wanted targets as given (activatables are self/party-wide)
-            foreach (var target in wanted) {
-                given.Add(target);
+            // Songs (Bardic / Azata Mythic Performance): one performer, mass effect on the party.
+            // The wanted set represents listeners; only one caster activates and everyone benefits.
+            if (Category == Category.Song) {
+                var caster = CasterQueue[0];
+                var src = caster.ActivatableSource;
+                if (src == null) return;
+                if (src.IsOn) {
+                    foreach (var target in wanted) given.Add(target);
+                    return;
+                }
+                if (!src.IsAvailable) {
+                    Main.Verbose($"Activatable {Name}: not available (resources or restrictions)");
+                    return;
+                }
+                foreach (var target in wanted) given.Add(target);
+                ActualCastQueue.Add((caster.who.UniqueId, caster));
+                return;
             }
-            ActualCastQueue.Add((caster.who.UniqueId, caster));
+
+            // Class toggles, abilities, and equipment activatables are self-toggles. Each provider
+            // operates on its own unit, so iterate per-caster and only act on wanted units.
+            foreach (var caster in CasterQueue) {
+                var src = caster.ActivatableSource;
+                if (src == null) continue;
+                if (!UnitWants(caster.who)) continue;
+                if (src.IsOn) {
+                    given.Add(caster.who.UniqueId);
+                    continue;
+                }
+                if (!src.IsAvailable) {
+                    Main.Verbose($"Activatable {Name}: not available for {caster.who.CharacterName}");
+                    continue;
+                }
+                given.Add(caster.who.UniqueId);
+                ActualCastQueue.Add((caster.who.UniqueId, caster));
+            }
         }
 
         internal void SetHidden(HideReason reason, bool set) {
@@ -586,6 +603,10 @@ namespace BuffIt2TheLimit {
         public int CharacterIndex;
         public BuffSourceType SourceType = BuffSourceType.Spell;
         public Kingmaker.Items.ItemEntity SourceItem;
+        // Per-caster ActivatableAbility fact instance. Set for activatable providers so the
+        // executor can flip IsOn on the right unit's instance when the same blueprint is
+        // shared across the party (e.g. Power Attack toggle on multiple characters).
+        public Kingmaker.UnitLogic.ActivatableAbilities.ActivatableAbility ActivatableSource;
 
         public void InstallDebugListeners() {
             credits.Subscribe<int>(c => {

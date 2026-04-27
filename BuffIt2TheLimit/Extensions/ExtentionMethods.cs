@@ -164,6 +164,10 @@ namespace BuffIt2TheLimit.Extensions {
                         foreach (var subEffect in wrapper.Action.Actions.Where(a => a != null).SelectMany(a => a.GetBeneficialBuffs(level + 1)))
                             yield return subEffect;
                     }
+                } else if (action is ContextActionRepeatedActions repeat) {
+                    LogVerbose(level, $"recursing into repeatedActions");
+                    foreach (var b in (repeat.Actions?.Actions).EmptyIfNull().Where(a => a != null).SelectMany(a => a.GetBeneficialBuffs(level + 1)))
+                        yield return b;
                 } else if (action is ContextActionCastSpell spellCast) {
                     LogVerbose(level, $"recursing into spellCast");
                     foreach (var b in spellCast.Spell.GetBeneficialBuffs(level + 1))

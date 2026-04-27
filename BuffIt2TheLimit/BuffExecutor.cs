@@ -227,51 +227,54 @@ namespace BuffIt2TheLimit {
                 .Reverse()
                 .OrderBy(b => b.ActivatableSource?.ConversionsProvider is ShiftersFury ? 2
                            : b.ActivatableSource?.ConversionsProvider != null ? 1 : 0)) {
-                try {
-                    var activatable = actBuff.ActivatableSource;
-                    if (activatable == null) {
-                        Main.Verbose($"Activatable {actBuff.Name}: null source, skipping");
-                        continue;
+                if (actBuff.ActualCastQueue == null) continue;
+                foreach (var (_, provider) in actBuff.ActualCastQueue) {
+                    try {
+                        var activatable = provider.ActivatableSource ?? actBuff.ActivatableSource;
+                        if (activatable == null) {
+                            Main.Verbose($"Activatable {actBuff.Name}: null source, skipping");
+                            continue;
+                        }
+
+                        var caster = provider.who;
+                        if (caster == null) continue;
+
+                        if (IsEffectivelyOn(caster, activatable)) {
+                            Main.Verbose($"Activatable {actBuff.Name}: already active on {caster.CharacterName}, skipping");
+                            continue;
+                        }
+
+                        var group = activatable.Blueprint.Group;
+                        // Mutual exclusivity: only one per ActivatableAbilityGroup per caster
+                        // Group.None means "no exclusivity" — independent abilities can all activate
+                        var groupKey = (group, caster.UniqueId);
+                        if (group != ActivatableAbilityGroup.None && activatedGroups.Contains(groupKey)) {
+                            Main.Log($"Activatable {actBuff.Name}: skipped — another {group} ability already activated for {caster.CharacterName}");
+                            continue;
+                        }
+
+                        var target = ResolveActivationTarget(caster, activatable);
+                        if (target == null) {
+                            Main.Log($"Activatable {actBuff.Name}: no activation target (no conversions available for {caster.CharacterName})");
+                            continue;
+                        }
+
+                        if (!target.IsAvailable) {
+                            Main.Verbose($"Activatable {actBuff.Name}: not available for {caster.CharacterName} (resources or restrictions)");
+                            continue;
+                        }
+
+                        Main.Verbose($"Activating: {actBuff.Name} on {caster.CharacterName}");
+                        target.IsOn = true;
+                        if (!target.IsStarted)
+                            target.TryStart();
+                        if (group != ActivatableAbilityGroup.None)
+                            activatedGroups.Add(groupKey);
+                        if (actBuff.DeactivateAfterRounds > 0)
+                            GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
+                    } catch (Exception ex) {
+                        Main.Error(ex, $"activating {actBuff.Name}");
                     }
-
-                    var caster = actBuff.CasterQueue.FirstOrDefault()?.who;
-                    if (caster == null) continue;
-
-                    if (IsEffectivelyOn(caster, activatable)) {
-                        Main.Verbose($"Activatable {actBuff.Name}: already active, skipping");
-                        continue;
-                    }
-
-                    var group = activatable.Blueprint.Group;
-                    // Mutual exclusivity: only one per ActivatableAbilityGroup per caster
-                    // Group.None means "no exclusivity" — independent abilities can all activate
-                    var groupKey = (group, caster.UniqueId);
-                    if (group != ActivatableAbilityGroup.None && activatedGroups.Contains(groupKey)) {
-                        Main.Log($"Activatable {actBuff.Name}: skipped — another {group} ability already activated for {caster.CharacterName}");
-                        continue;
-                    }
-
-                    var target = ResolveActivationTarget(caster, activatable);
-                    if (target == null) {
-                        Main.Log($"Activatable {actBuff.Name}: no activation target (no conversions available for {caster.CharacterName})");
-                        continue;
-                    }
-
-                    if (!target.IsAvailable) {
-                        Main.Verbose($"Activatable {actBuff.Name}: not available (resources or restrictions)");
-                        continue;
-                    }
-
-                    Main.Verbose($"Activating: {actBuff.Name} on {caster.CharacterName}");
-                    target.IsOn = true;
-                    if (!target.IsStarted)
-                        target.TryStart();
-                    if (group != ActivatableAbilityGroup.None)
-                        activatedGroups.Add(groupKey);
-                    if (actBuff.DeactivateAfterRounds > 0)
-                        GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
-                } catch (Exception ex) {
-                    Main.Error(ex, $"activating {actBuff.Name}");
                 }
             }
 
@@ -550,55 +553,61 @@ namespace BuffIt2TheLimit {
                 .Reverse()
                 .OrderBy(b => b.ActivatableSource?.ConversionsProvider is ShiftersFury ? 2
                            : b.ActivatableSource?.ConversionsProvider != null ? 1 : 0)) {
-                try {
-                    var activatable = actBuff.ActivatableSource;
-                    if (activatable == null) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' (null source)");
-                        continue;
-                    }
+                if (actBuff.ActualCastQueue == null || actBuff.ActualCastQueue.Count == 0) {
+                    Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' (no eligible caster)");
+                    continue;
+                }
+                foreach (var (_, provider) in actBuff.ActualCastQueue) {
+                    try {
+                        var activatable = provider.ActivatableSource ?? actBuff.ActivatableSource;
+                        if (activatable == null) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' (null source)");
+                            continue;
+                        }
 
-                    var caster = actBuff.CasterQueue.FirstOrDefault()?.who;
-                    if (caster == null) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' (no caster in queue)");
-                        continue;
-                    }
+                        var caster = provider.who;
+                        if (caster == null) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' (provider has no unit)");
+                            continue;
+                        }
 
-                    if (IsEffectivelyOn(caster, activatable)) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (already on)");
-                        continue;
-                    }
+                        if (IsEffectivelyOn(caster, activatable)) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (already on)");
+                            continue;
+                        }
 
-                    var group = activatable.Blueprint.Group;
-                    // Group.None means "no exclusivity" — independent abilities can all activate
-                    var groupKey = (group, caster.UniqueId);
-                    if (group != ActivatableAbilityGroup.None && activatedGroups.Contains(groupKey)) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (group {group} already activated)");
-                        continue;
-                    }
+                        var group = activatable.Blueprint.Group;
+                        // Group.None means "no exclusivity" — independent abilities can all activate
+                        var groupKey = (group, caster.UniqueId);
+                        if (group != ActivatableAbilityGroup.None && activatedGroups.Contains(groupKey)) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (group {group} already activated)");
+                            continue;
+                        }
 
-                    var target = ResolveActivationTarget(caster, activatable);
-                    if (target == null) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (no activation target: no conversions available)");
-                        continue;
-                    }
+                        var target = ResolveActivationTarget(caster, activatable);
+                        if (target == null) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (no activation target: no conversions available)");
+                            continue;
+                        }
 
-                    if (!target.IsAvailable) {
-                        Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (not available: resources/restrictions)");
-                        continue;
-                    }
+                        if (!target.IsAvailable) {
+                            Main.Log($"[CSD] Phase0 skip '{actBuff.Name}' on {caster.CharacterName} (not available: resources/restrictions)");
+                            continue;
+                        }
 
-                    string targetLabel = ReferenceEquals(target, activatable) ? actBuff.Name : $"{actBuff.Name} → {target.Blueprint.Name}";
-                    Main.Log($"[CSD] Phase0 activate '{targetLabel}' on {caster.CharacterName}");
-                    target.IsOn = true;
-                    if (!target.IsStarted)
-                        target.TryStart();
-                    if (group != ActivatableAbilityGroup.None)
-                        activatedGroups.Add(groupKey);
-                    activatablesActivated++;
-                    if (actBuff.DeactivateAfterRounds > 0)
-                        GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
-                } catch (Exception ex) {
-                    Main.Error(ex, $"combat start: activating {actBuff.Name}");
+                        string targetLabel = ReferenceEquals(target, activatable) ? actBuff.Name : $"{actBuff.Name} → {target.Blueprint.Name}";
+                        Main.Log($"[CSD] Phase0 activate '{targetLabel}' on {caster.CharacterName}");
+                        target.IsOn = true;
+                        if (!target.IsStarted)
+                            target.TryStart();
+                        if (group != ActivatableAbilityGroup.None)
+                            activatedGroups.Add(groupKey);
+                        activatablesActivated++;
+                        if (actBuff.DeactivateAfterRounds > 0)
+                            GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
+                    } catch (Exception ex) {
+                        Main.Error(ex, $"combat start: activating {actBuff.Name}");
+                    }
                 }
             }
 

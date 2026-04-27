@@ -3806,7 +3806,10 @@ namespace BuffIt2TheLimit {
                 float limitSeconds = buff.DeactivateAfterRounds * SecondsPerRound;
                 if (buff.DeactivateAfterRounds > 0 && timePassed >= limitSeconds) {
                     Main.Log($"Round limit reached for {buff.Name}: {timePassed:F1}s elapsed (limit={buff.DeactivateAfterRounds} rounds = {limitSeconds:F0}s), deactivating");
-                    buff.ActivatableSource.IsOn = false;
+                    foreach (var provider in buff.CasterQueue) {
+                        var src = provider.ActivatableSource ?? buff.ActivatableSource;
+                        if (src != null && src.IsOn) src.IsOn = false;
+                    }
                     toRemove.Add(guid);
                 }
             }

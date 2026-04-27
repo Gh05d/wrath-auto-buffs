@@ -879,17 +879,25 @@ namespace BuffIt2TheLimit {
             var blueprint = activatable.Blueprint;
             var key = new BuffKey(blueprint.AssetGuid);
 
-            if (BuffsByKey.TryGetValue(key, out var existing)) {
-                return;
-            }
-
-            var buff = new BubbleBuff(activatable);
-            buff.Category = category;
-
             BuffSourceType sourceType;
             if (category == Category.Song) sourceType = BuffSourceType.Song;
             else if (sourceItem != null) sourceType = BuffSourceType.Equipment;
             else sourceType = BuffSourceType.Activatable;
+
+            BubbleBuff buff;
+            if (BuffsByKey.TryGetValue(key, out var existing)) {
+                // Same activatable already registered by another party member. Don't drop the new
+                // dude — append a per-character provider so the UI exposes them as a self-toggle
+                // target and the executor can flip IsOn on the right per-unit fact instance.
+                if (existing.CasterQueue.Any(p => p.who == dude && p.SourceType == sourceType)) {
+                    return;
+                }
+                buff = existing;
+            } else {
+                buff = new BubbleBuff(activatable);
+                buff.Category = category;
+                BuffsByKey[key] = buff;
+            }
 
             // Item-backed activatables use the item's charges; class activatables use ResourceCount
             int initialCredits = sourceItem != null ? sourceItem.Charges : (activatable.ResourceCount ?? 1);
@@ -904,11 +912,10 @@ namespace BuffIt2TheLimit {
                 baseSpell = null,
                 CharacterIndex = charIndex,
                 SourceType = sourceType,
-                SourceItem = sourceItem
+                SourceItem = sourceItem,
+                ActivatableSource = activatable
             };
             buff.CasterQueue.Add(provider);
-
-            BuffsByKey[key] = buff;
         }
 
         private bool CanUseItemWithUmd(UnitEntityData dude, BlueprintAbility spell, int dc) {
