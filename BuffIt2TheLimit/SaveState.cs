@@ -54,6 +54,8 @@ namespace BuffIt2TheLimit {
         [System.ComponentModel.DefaultValue(true)]
         public bool ActivatablesEnabled = true;
         [JsonProperty]
+        public bool SortByName;
+        [JsonProperty]
         public Dictionary<BuffGroup, ShortcutBinding> ShortcutKeys = new();
         [JsonProperty]
         public ShortcutBinding OpenBuffMenuKey;

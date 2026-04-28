@@ -590,7 +590,12 @@ namespace BuffIt2TheLimit {
                     search.InputField.text = val;
                 RefreshFiltering();
             });
+            SortByName.Value = state.SavedState.SortByName;
             SortByName.Subscribe<bool>(show => {
+                if (state.SavedState.SortByName != show) {
+                    state.SavedState.SortByName = show;
+                    state.Save(true);
+                }
                 RefreshFiltering();
             });
 
