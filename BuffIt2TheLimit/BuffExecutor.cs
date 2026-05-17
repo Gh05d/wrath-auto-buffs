@@ -12,6 +12,7 @@ using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.ActivatableAbilities;
 using Kingmaker.UnitLogic.Abilities.Components;
+using Kingmaker.UnitLogic.Parts;
 using Kingmaker.UnitLogic.Buffs.Blueprints;
 using Kingmaker.Utility;
 using System;
@@ -254,7 +255,6 @@ namespace BuffIt2TheLimit {
             //   0: normal activatables (Rage, Bardic Performance, …)
             //   1: Pattern-B parents with sub-selections (Chimeric Aspect — activates the form)
             //   2: Shifter's Fury (needs AppliedFacts from the form to exist first)
-            var activatedGroups = new HashSet<(ActivatableAbilityGroup, string)>();
             foreach (var actBuff in State.BuffList
                 .Where(b => b.IsActivatable && b.InGroups.Contains(buffGroup) && b.Fulfilled > 0)
                 .Reverse()
@@ -278,12 +278,18 @@ namespace BuffIt2TheLimit {
                         }
 
                         var group = activatable.Blueprint.Group;
-                        // Mutual exclusivity: only one per ActivatableAbilityGroup per caster
-                        // Group.None means "no exclusivity" — independent abilities can all activate
-                        var groupKey = (group, caster.UniqueId);
-                        if (group != ActivatableAbilityGroup.None && activatedGroups.Contains(groupKey)) {
-                            Main.Log($"Activatable {actBuff.Name}: skipped — another {group} ability already activated for {caster.CharacterName}");
-                            continue;
+                        // Per-group cap is dynamic: features like Aeon's mythic gaze (Lv6/Lv10) or
+                        // other "IncreaseActivatableAbilityGroupSize" components raise it above the
+                        // default of 1. Count live on-state activatables in the group and compare
+                        // against UnitPartActivatableAbility.GetGroupSize. Group.None has no cap.
+                        if (group != ActivatableAbilityGroup.None) {
+                            int cap = caster.Get<UnitPartActivatableAbility>()?.GetGroupSize(group) ?? 1;
+                            int activeInGroup = caster.ActivatableAbilities.RawFacts
+                                .Count(a => a.Blueprint.Group == group && IsEffectivelyOn(caster, a));
+                            if (activeInGroup >= cap) {
+                                Main.Log($"Activatable {actBuff.Name}: skipped — {group} cap reached for {caster.CharacterName} ({activeInGroup}/{cap})");
+                                continue;
+                            }
                         }
 
                         var target = ResolveActivationTarget(caster, activatable);
@@ -301,8 +307,6 @@ namespace BuffIt2TheLimit {
                         target.IsOn = true;
                         if (!target.IsStarted)
                             target.TryStart();
-                        if (group != ActivatableAbilityGroup.None)
-                            activatedGroups.Add(groupKey);
                         if (actBuff.DeactivateAfterRounds > 0)
                             GlobalBubbleBuffer.RoundLimitWatcher?.TrackActivation(activatable.Blueprint.AssetGuid);
                     } catch (Exception ex) {
